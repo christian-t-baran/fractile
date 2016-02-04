@@ -12,51 +12,87 @@
 	to represent RGB & LAB representations of colours
 */
 
+// default make black:
+Colour::Colour() {
+	std::string colour = "#000000";
+	std::string r = colour.substr(1, 2);
+	std::string g = colour.substr(3, 2);
+	std::string b = colour.substr(5, 2);
+
+	_rgb_r = std::stoi(r, nullptr, 16);
+	_rgb_g = std::stoi(g, nullptr, 16);
+	_rgb_b = std::stoi(b, nullptr, 16);
+
+	double* LAB = RGBtoLAB(_rgb_r, _rgb_g, _rgb_b);
+
+	_lab_l = LAB[0];
+	_lab_a = LAB[1];
+	_lab_b = LAB[2];
+
+	delete LAB;
+}
+
 // Constructs a colour from a set of 
 Colour::Colour(std::string colour) {
 	std::string r = colour.substr(1, 2);
 	std::string g = colour.substr(3, 2);
 	std::string b = colour.substr(5, 2);
 
-	rgb_r = std::stoi(r, nullptr, 16);
-	rgb_g = std::stoi(g, nullptr, 16);
-	rgb_b = std::stoi(b, nullptr, 16);
+	_rgb_r = std::stoi(r, nullptr, 16);
+	_rgb_g = std::stoi(g, nullptr, 16);
+	_rgb_b = std::stoi(b, nullptr, 16);
 
-	double* LAB = RGBtoLAB(rgb_r, rgb_g, rgb_b);
+	double* LAB = RGBtoLAB(_rgb_r, _rgb_g, _rgb_b);
 	
-	lab_l = LAB[0];
-	lab_a = LAB[1];
-	lab_b = LAB[2];
+	_lab_l = LAB[0];
+	_lab_a = LAB[1];
+	_lab_b = LAB[2];
 
 	delete LAB;
 }
 
 // Constructs a colour from a set of RGB values
 Colour::Colour(int r, int g, int b) {
-	rgb_r = r;
-	rgb_g = g;
-	rgb_b = b;
+	_rgb_r = r;
+	_rgb_g = g;
+	_rgb_b = b;
 
 	double* LAB = RGBtoLAB(r, g, b);
 
-	lab_l = LAB[0];
-	lab_a = LAB[1];
-	lab_b = LAB[2];
+	_lab_l = LAB[0];
+	_lab_a = LAB[1];
+	_lab_b = LAB[2];
 
 	delete LAB;
 }
 
 // Constructs a colour from a set of LAB values
 Colour::Colour(double l, double a, double b) {
-	lab_l = l;
-	lab_a = a;
-	lab_b = b;
+	_lab_l = l;
+	_lab_a = a;
+	_lab_b = b;
 
 	int* RGB = LABtoRGB(l, a, b);
 
-	rgb_r = RGB[0];
-	rgb_g = RGB[1];
-	rgb_b = RGB[2];
+	_rgb_r = RGB[0];
+	_rgb_g = RGB[1];
+	_rgb_b = RGB[2];
+
+	delete RGB;
+}
+
+// Changes a colour to new LAB values
+void Colour::changeLAB(double l, double a, double b)
+{
+	_lab_l = l;
+	_lab_a = a;
+	_lab_b = b;
+
+	int* RGB = LABtoRGB(l, a, b);
+
+	_rgb_r = RGB[0];
+	_rgb_g = RGB[1];
+	_rgb_b = RGB[2];
 
 	delete RGB;
 }
@@ -64,48 +100,48 @@ Colour::Colour(double l, double a, double b) {
 // Returns L* value from LAB
 double Colour::getLAB_L()
 {
-	return lab_l;
+	return _lab_l;
 }
 
 // Returns a value from LAB
 double Colour::getLAB_A()
 {
-	return lab_a;
+	return _lab_a;
 }
 
 // Returns b value from LAB
 double Colour::getLAB_B()
 {
-	return lab_b;
+	return _lab_b;
 }
 
 // Returns r value from RGB
 int Colour::getRGB_R()
 {
-	return rgb_r;
+	return _rgb_r;
 }
 
 // Returns g value from RGB
 int Colour::getRGB_G()
 {
-	return rgb_g;
+	return _rgb_g;
 }
 
 // Returns b value from RGB
 int Colour::getRGB_B()
 {
-	return rgb_b;
+	return _rgb_b;
 }
 
 // Returns a string representation of LAB values
 std::string Colour::LAB() {
 	std::stringstream LAB;
 	LAB << "("
-		<< lab_l
+		<< _lab_l
 		<< ", "
-		<< lab_a
+		<< _lab_a
 		<< ", "
-		<< lab_b
+		<< _lab_b
 		<< ")";
 	
 	return LAB.str();
@@ -115,11 +151,11 @@ std::string Colour::LAB() {
 std::string Colour::RGB() {
 	std::stringstream RGB;
 	RGB << "("
-		<< rgb_r
+		<< _rgb_r
 		<< ", "
-		<< rgb_g
+		<< _rgb_g
 		<< ", "
-		<< rgb_b
+		<< _rgb_b
 		<< ")";
 	
 	return RGB.str();
@@ -129,9 +165,9 @@ std::string Colour::RGB() {
 std:: string Colour::hex() {
 	std::stringstream hex;
 	hex << "#"
-		<< std::setfill('0') << std::setw(2) << std::hex << rgb_r
-		<< std::setfill('0') << std::setw(2) << std::hex << rgb_g 
-		<< std::setfill('0') << std::setw(2) << std::hex << rgb_b;
+		<< std::setfill('0') << std::setw(2) << std::hex << _rgb_r
+		<< std::setfill('0') << std::setw(2) << std::hex << _rgb_g 
+		<< std::setfill('0') << std::setw(2) << std::hex << _rgb_b;
 
 	return hex.str();
 }
@@ -251,4 +287,17 @@ void colourTestsLAB() {
 	std::cout << "L*AB: " << dsgreen.LAB() << std::endl;
 	std::cout << "RGB: " << dsgreen.RGB() << std::endl;
 
+	// Test changeLAB
+	Colour dsToBlack = dsgreen;
+	dsToBlack.changeLAB(0, 0, 0);
+	std::cout << "Representation of dsgreen changed to black" << std::endl;
+	std::cout << "Hex: " << dsToBlack.hex() << std::endl;
+	std::cout << "L*AB: " << dsToBlack.LAB() << std::endl;
+	std::cout << "RGB: " << dsToBlack.RGB() << std::endl;
+
+	// Test dark sea green
+	std::cout << "Representations of old dsgreen" << std::endl;
+	std::cout << "Hex: " << dsgreen.hex() << std::endl;
+	std::cout << "L*AB: " << dsgreen.LAB() << std::endl;
+	std::cout << "RGB: " << dsgreen.RGB() << std::endl;
 }
