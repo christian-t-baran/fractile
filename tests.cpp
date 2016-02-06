@@ -4,6 +4,7 @@
 #include "colours/colourConversion.h"
 #include "colourFields/radialFieldTest.h"
 #include "colourFields/linearFieldTest.h"
+#include "tiling\squareTiling.h"
 
 // handles linear field tests
 void linearField() {
@@ -39,6 +40,24 @@ void radialField() {
 	std::cin.get();
 }
 
+void colorfields() {
+	int option;
+
+	std::cout << "1 for radial field tests, 2 for linear field tests" << std::endl;
+	std::cin >> option;
+
+	if (option == 1) {
+		radialField();
+	}
+	else if (option == 2) {
+		linearField();
+	}
+}
+
+void tiling() {
+	squareTilingTest();
+}
+
 int main() {
 	int option;
 	/*
@@ -59,14 +78,14 @@ int main() {
 	std::cout << std::endl << std::endl << std::endl;
 	*/
 
-	std::cout << "1 for radial field tests, 2 for linear field tests" << std::endl;
+	std::cout << "1 for tiling tests, 2 for field tests" << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
-		radialField();
+		tiling();
 	}
 	else if (option == 2) {
-		linearField();
+		colorfields();
 	}
 
 	std::cin.get();

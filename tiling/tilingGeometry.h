@@ -4,6 +4,6 @@
 
 #pragma once
 
-std::pair<int, int> centerRectangle(int, int);
+std::pair<int, int> centerRectangle(int, int, int, int);
 
 #endif
