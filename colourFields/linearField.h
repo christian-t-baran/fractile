@@ -1,22 +1,18 @@
-#ifndef RADIAL_FIELD_H
-#define RADIAL_FIELD_H
-
 #pragma once
-#include <vector>
+#include "D:\VisualCPP\Repos\fractile\colourFields\colourField.h"
 
-#include "../colours/colour.h"
-#include "colourField.h"
-
-// Models a Radial Colour Field
-class RadialField : 
-	public ColourField {
-
+// Models a LinearColourField
+class LinearField :
+	public ColourField
+{
 public:
-	RadialField(std::vector<Colour>, int, double);
-	~RadialField();
+	LinearField(std::vector<Colour>, int, int, double);
+	~LinearField();
+
 	void reinitialize() override;
 	void setStep(int) override;
 	void setBias(double) override;
+	void changeAxis();
 
 	void setStrobe(int, double) override;
 	void setPulse(Colour, int, double) override;
@@ -29,9 +25,11 @@ public:
 protected:
 	std::vector<Colour> _colours;
 	std::vector<Colour> _curColours;
-	int _radius;
+	int _x;
+	int _y;
 	double _bias;
 	int _step;
+	bool _xAxis;
 	bool _effect;
 
 	Colour _pulseColour;
@@ -46,6 +44,3 @@ private:
 	Colour stepEffect(Colour, Colour);
 };
 
-void radialFieldTests();
-
-#endif

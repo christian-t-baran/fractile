@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iostream>
+#include <vector>
 #include "colourConversion.h"
 
 /*
@@ -12,8 +13,13 @@
 
 // Colour test cases from http://www.colorhexa.com
 
+// Converts RGB value to value in 0 -> 1.0 range
+double convertRGBtoDec(int c) {
+	return c / 255.0;
+}
+
 // Converts RGB to double array of XYZ
-double* RGBtoXYZ (int r, int g, int b) {
+std::vector<double> RGBtoXYZ (int r, int g, int b) {
 	double R = r / 255.0;
 	double G = g / 255.0;
 	double B = b / 255.0;
@@ -27,7 +33,7 @@ double* RGBtoXYZ (int r, int g, int b) {
 	G = G * 100;
 	B = B * 100;
 
-	double* XYZ = new double[3];
+	std::vector<double> XYZ(3);
 
 	XYZ[0] = R * 0.4124 + G * 0.3576 + B * 0.1805;
 	XYZ[1] = R * 0.2126 + G * 0.7152 + B * 0.0722;
@@ -49,7 +55,7 @@ double RGBtoXYZcompander(double i) {
 }
 
 // Converts LAB values to array of XYZ values
-double* LABtoXYZ(double l, double a, double b) {
+std::vector<double> LABtoXYZ(double l, double a, double b) {
 	double Y;
 
 	// handle case where it chokes on 0
@@ -66,7 +72,7 @@ double* LABtoXYZ(double l, double a, double b) {
 	Y = LABtoXYZhelper(Y);
 	Z = LABtoXYZhelper(Z);
 
-	double* XYZ = new double[3];
+	std::vector<double> XYZ(3);
 	XYZ[0] = X * REF_X;
 	XYZ[1] = Y * REF_Y;
 	XYZ[2] = Z * REF_Z;
@@ -88,11 +94,10 @@ double LABtoXYZhelper(double i) {
 }
 
 // Converts array of XYZ values to array of RGB values
-int* XYZtoRGB(double XYZ[]) {
+std::vector<int> XYZtoRGB(std::vector<double> XYZ) {
 	double X = XYZ[0] / 100.0;    //X from 0 to  95.047      (Observer = 2°, Illuminant = D65)
 	double Y = XYZ[1] / 100.0;    //Y from 0 to 100.000
 	double Z = XYZ[2] / 100.0;    //Z from 0 to 108.883
-	delete XYZ;
 
 	double R = (X * 3.2406) + (Y * -1.5372) + (Z * -0.4986);
 	double G = (X * -0.9689) + (Y *  1.8758) + (Z *  0.0415);
@@ -102,7 +107,7 @@ int* XYZtoRGB(double XYZ[]) {
 	G = XYZtoRGBhelper(G);
 	B = XYZtoRGBhelper(B);
 
-	int* RGB = new int[3];
+	std::vector<int> RGB(3);
 
 	RGB[0] = (int) std::round(R * 255);
 	RGB[1] = (int) std::round(G * 255);
@@ -124,17 +129,17 @@ double XYZtoRGBhelper(double i) {
 }
 
 // converts array of XYZ values to array of LAB values
-double* XYZtoLAB(double* XYZ) {
+std::vector<double> XYZtoLAB(std::vector<double> XYZ) {
 	double X = XYZ[0] / REF_X;	// REFERENCE WHITE
 	double Y = XYZ[1] / REF_Y;	// Observer= 2°, Illuminant= D65
 	double Z = XYZ[2] / REF_Z;
-	delete XYZ;
+	
 
 	X = XYZtoLABhelper(X);
 	Y = XYZtoLABhelper(Y);
 	Z = XYZtoLABhelper(Z);
 
-	double* LAB = new double[3];
+	std::vector<double> LAB(3);
 
 	LAB[0] = (116 * Y) - 16;
 	LAB[1] = 500 * (X - Y);
@@ -157,19 +162,19 @@ double XYZtoLABhelper(double i) {
 }
 
 // Converts set of RGB values to array of LAB values
-double* RGBtoLAB(int r, int g, int b) {
-	double* XYZ = RGBtoXYZ(r, g, b);
+std::vector<double> RGBtoLAB(int r, int g, int b) {
+	std::vector<double> XYZ = RGBtoXYZ(r, g, b);
 	
-	double* LAB = XYZtoLAB(XYZ);
+	std::vector<double> LAB = XYZtoLAB(XYZ);
 
 	return LAB;
 }
 
 // Converts set of LAB values to array of RGB values
-int* LABtoRGB(double l, double a, double b) {
-	double* XYZ = LABtoXYZ(l, a, b);
+std::vector<int> LABtoRGB(double l, double a, double b) {
+	std::vector<double> XYZ = LABtoXYZ(l, a, b);
 
-	int* LAB = XYZtoRGB(XYZ);
+	std::vector<int> LAB = XYZtoRGB(XYZ);
 
 	return LAB;
 }
@@ -178,7 +183,7 @@ int* LABtoRGB(double l, double a, double b) {
 void colourConversionTests() {
 	// Tests for RGB colours
 	std::cout << "Test case RGB(0, 0, 0) - black" << std::endl;		//	black
-	double* testD = RGBtoLAB(0, 0, 0);
+	std::vector<double> testD = RGBtoLAB(0, 0, 0);
 	std::cout << "LAB values are " << testD[0] << ", " << testD[1] << ", " << testD[2] << std::endl;
 
 	std::cout << "Test case RGB(255, 255, 255) - white" << std::endl;	//	white
@@ -199,7 +204,7 @@ void colourConversionTests() {
 
 	// Tests for LAB colours
 	std::cout << "Test CASE LAB(100, 0, 0.009) - white" << std::endl;	// white
-	int* testI = LABtoRGB(100, 0, 0.009);
+	std::vector<int> testI = LABtoRGB(100, 0, 0.009);
 	std::cout << "RGB values are " << testI[0] << ", " << testI[1] << ", " << testI[2] << std::endl;
 
 	std::cout << "Test CASE LAB(0, 0, 0) - black" << std::endl;			// black
@@ -217,9 +222,5 @@ void colourConversionTests() {
 	std::cout << "Test CASE LAB(72.087, -23.82, 18.033) - dark sea green" << std::endl;
 	testI = LABtoRGB(72.087, -23.82, 18.033);
 	std::cout << "RGB values are " << testI[0] << ", " << testI[1] << ", " << testI[2] << std::endl;
-
-	delete testD;
-	delete testI;
-
 
 }

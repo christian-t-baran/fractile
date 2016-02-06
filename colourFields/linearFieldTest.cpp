@@ -3,14 +3,14 @@
 #include <string>
 #include <vector>
 
-#include "radialField.h"
+#include "linearField.h"
 #include "../colours/colour.h"
 #include "../colours/colourConversion.h"
 
-// creates image from a radial field
-void writeImage(int imageDim, RadialField field, Magick::Image& image) {
-	for (int i = 0; i < imageDim; i++) {
-		for (int j = 0; j < imageDim; j++) {
+// Creates an image from a LinearField
+void writeImage(int x, int y, LinearField field, Magick::Image& image) {
+	for (int i = 0; i < x; i++) {
+		for (int j = 0; j < y; j++) {
 			Colour fieldCol = field.getColourAt(i, j);
 			// std::cout << "Colour at " << i << "," << j << "   " << fieldCol.hex() << std::endl;
 			double r = convertRGBtoDec(fieldCol.getRGB_R());
@@ -22,17 +22,16 @@ void writeImage(int imageDim, RadialField field, Magick::Image& image) {
 			image.pixelColor(i, j, tempCol);
 		}
 	}
-
 }
 
-// creates gif from a radial field
-void writeBiasedGif(int imageDim, RadialField field) {
+// Creates a gif from a LinearField effect
+void writeBiasedGif(int x, int y, LinearField field) {
 	std::vector< Magick::Image > frames;
-	std::string dimensions = std::to_string(imageDim) + "x" + std::to_string(imageDim);
+	std::string dimensions = std::to_string(x) + "x" + std::to_string(y);
 
 	while (!field.finishedEffect()) {
 		Magick::Image testImage(dimensions.c_str(), "white");
-		writeImage(imageDim, field, testImage);
+		writeImage(x, y, field, testImage);
 		testImage.animationDelay(10);
 
 		frames.push_back(testImage);
@@ -42,8 +41,8 @@ void writeBiasedGif(int imageDim, RadialField field) {
 	Magick::writeImages(frames.begin(), frames.end(), "test.gif");
 }
 
-void effectRadialFieldTest() {
-	std::cout << "Radial Field Effect Test" << std::endl;
+void effectLinearFieldTest() {
+	std::cout << "Linear Field Effect Test" << std::endl;
 
 	Magick::InitializeMagick("C:\\ImageMagick");
 
@@ -51,7 +50,9 @@ void effectRadialFieldTest() {
 	std::string colourStr2;
 	std::string colourPulse;
 
-	int radius;
+	int x;
+	int y;
+	int axis;
 	int step;
 
 	double bias;
@@ -59,11 +60,15 @@ void effectRadialFieldTest() {
 	int effectStep;
 	double effectBias;
 
-	// get input to create radial field
-	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse: ";
+	// get input to create linear field
+	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse: " << std::endl;
 	std::cin >> effect;
-	std::cout << "Please enter radius: ";
-	std::cin >> radius;
+	std::cout << "Please enter x length: ";
+	std::cin >> x;
+	std::cout << "Please enter y length: ";
+	std::cin >> y;
+	std::cout << "Enter 1 to gradate on x axis, 2 for y" << std::endl;
+	std::cin >> axis;
 	std::cout << "Please enter field step (<= radius): ";
 	std::cin >> step;
 	std::cout << "Please enter field bias: ";
@@ -76,11 +81,12 @@ void effectRadialFieldTest() {
 	std::cin >> colourStr1;
 	std::cout << "Please enter second colour (#HEX): ";
 	std::cin >> colourStr2;
-	// get pulse colour if selected
+
+	// get pulse colour if it applies
 	if (effect == 3) {
 		std::cout << "Please enter pulse colour (#HEX): ";
 		std::cin >> colourPulse;
-		
+
 	}
 
 	Colour colour1 = Colour(colourStr1);
@@ -91,7 +97,7 @@ void effectRadialFieldTest() {
 	colours.push_back(colour1);
 	colours.push_back(colour2);
 
-	RadialField test = RadialField(colours, radius, bias);
+	LinearField test = LinearField(colours, x, y, bias);
 
 	// set up effect
 	if (effect == 1) {
@@ -104,28 +110,38 @@ void effectRadialFieldTest() {
 		Colour pulse = Colour(colourPulse);
 		test.setPulse(pulse, effectStep, effectBias);
 	}
-	int imageDim = (radius * 2) + 1;
+
+	// change axis if y was selected
+	if (axis == 2) {
+		test.changeAxis();
+	}
 
 	test.setStep(step);
 
-	// create gif
-	writeBiasedGif(imageDim, test);
+	writeBiasedGif(x, y, test);
 }
 
-void basicRadialFieldTest() {
-	std::cout << "Radial Field Basic Test" << std::endl;
+void basicLinearFieldTest() {
+	std::cout << "Linear Field Basic Test" << std::endl;
 
 	Magick::InitializeMagick("C:\\ImageMagick");
 
 	std::string colourStr1;
 	std::string colourStr2;
-	int radius;
+
+	int x;
+	int y;
+	int axis;
 	int step;
 
-	// get input to create radial field
-	std::cout << "Please enter radius: ";
-	std::cin >> radius;
-	std::cout << "Please enter step (<= radius): ";
+	// get input to create linear field
+	std::cout << "Please enter x length: ";
+	std::cin >> x;
+	std::cout << "Please enter y length: ";
+	std::cin >> y;
+	std::cout << "Enter 1 to gradate on x axis, 2 for y" << std::endl;
+	std::cin >> axis;
+	std::cout << "Please enter field step (<= radius): ";
 	std::cin >> step;
 	std::cout << "Please enter first colour (#HEX): ";
 	std::cin >> colourStr1;
@@ -140,46 +156,49 @@ void basicRadialFieldTest() {
 	colours.push_back(colour1);
 	colours.push_back(colour2);
 
-	RadialField test = RadialField(colours, radius, 0.1);
-
-	int imageDim = (radius * 2) + 1;
+	LinearField test = LinearField(colours, x, y, 0.5);
 
 	test.setStep(step);
 
-	std::string dimensions = std::to_string(imageDim) + "x" + std::to_string(imageDim);
+	// change axis if y was selected
+	if (axis == 2) {
+		test.changeAxis();
+	}
 
-	Magick::Image testImage( dimensions.c_str() , "white");
+	std::string dimensions = std::to_string(x) + "x" + std::to_string(y);
+
+	Magick::Image testImage(dimensions.c_str(), "white");
 
 	// create images with a bias of 0, 0.1, 0.25, 0.5, 0.75, 0.9 and 1
 	test.setBias(0);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias000.png");
 
 	test.setBias(0.1);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias010.png");
 
 	test.setBias(0.25);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias025.png");
 
 	test.setBias(0.5);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias050.png");
 
 	test.setBias(0.75);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias075.png");
 
 	test.setBias(0.9);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias090.png");
 
 	test.setBias(1);
-	writeImage(imageDim, test, testImage);
+	writeImage(x, y, test, testImage);
 	testImage.write("bias100.png");
 
 
-	
+
 	std::cin.get();
 }

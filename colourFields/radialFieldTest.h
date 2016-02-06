@@ -3,6 +3,7 @@
 
 #pragma once
 
+void effectRadialFieldTest();
 void basicRadialFieldTest();
 
 #endif
