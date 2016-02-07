@@ -4,5 +4,6 @@
 #pragma once
 
 void squareTilingTest();
+void recursiveSubdivideSquare();
 
 #endif

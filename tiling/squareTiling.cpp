@@ -13,24 +13,24 @@
 #include "tilingGeometry.h"
 
 // Creates an image from a LinearField
-void writeSquareImage(int x, int y, int square, ColourField& field, Magick::Image& image) {
+void writeSquareImage(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image) {
 
-	for (int i = 0; i < x; i = i + square) {
-		for (int j = 0; j < y; j = j + square) {
-			std::pair<int, int> coord = centerRectangle(i, i+40, j, j + 40);
-			
-			Colour fieldCol = field.getColourAt( coord.first, coord.second);
+	for (int i = xLL; i < xUR; i = i + square) {
+		for (int j = yLL; j < yUR; j = j + square) {
+			std::pair<int, int> coord = centerRectangle(i, i + square, j, j + square);
+
+			Colour fieldCol = field.getColourAt(coord.first, coord.second);
 			double r = convertRGBtoDec(fieldCol.getRGB_R());
 			double g = convertRGBtoDec(fieldCol.getRGB_G());
 			double b = convertRGBtoDec(fieldCol.getRGB_B());
 
 			Magick::ColorRGB tempCol(r, g, b);
-			
-			image.strokeColor("black");
-			image.strokeWidth(1);
+
+			image.strokeColor(tempCol);
+			image.strokeWidth(0);
 			image.fillColor(tempCol);
 
-			image.draw(Magick::DrawableRectangle(i, j + square, i + square, j) );
+			image.draw(Magick::DrawableRectangle(i, j + square, i + square, j));
 		}
 	}
 
@@ -44,7 +44,7 @@ void writeSquareBiasedGif(int x, int y, int square, ColourField& field) {
 
 	while (!field.finishedEffect()) {
 		Magick::Image testImage(dimensions.c_str(), "white");
-		writeSquareImage(x, y, square, field, testImage);
+		writeSquareImage(0, 0, x, y, square, field, testImage);
 		testImage.animationDelay(10);
 
 		frames.push_back(testImage);
@@ -53,6 +53,117 @@ void writeSquareBiasedGif(int x, int y, int square, ColourField& field) {
 
 	Magick::writeImages(frames.begin(), frames.end(), "test.gif");
 }
+
+
+void writeRecursiveDiagonalSquareImage
+	(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image, int n){
+	// if drawing full square
+	if (n == 0) {
+		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
+	}
+	// else if drawing secondary square
+	else if (n == 1) {
+		// if square is odd or small
+		if (((square % 2) != 0) || (square <= 4)) {
+			writeRecursiveDiagonalSquareImage(xLL, yLL, xUR, yUR, square, field, image, 0);
+		}
+		else {
+			square = square / 2;
+
+			for (int i = xLL; i < xUR; i = i + square) {
+				for (int j = yLL; j < yUR; j = j + square) {
+					if ((i == (xLL + square)) && (j == (yLL + square))) {
+						writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 0);
+					}
+					else if ((i == (xLL + square)) || (j == (yLL + square))) {
+						if (i == (xLL + square)) {
+							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 1);
+						}
+						else if (j == (yLL + square)) {
+							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 1);
+						}
+					}
+					// if base square draw it
+					else {
+						writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 0);
+					}
+				}
+			}
+		}
+	}
+}
+
+void writeRecursiveSquareImage
+	(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image, int n) {
+
+	// if n = 0, just draw square in specified position
+	if (n == 0) {
+
+		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
+	}
+	// if n = 1, subdivide square into 4
+	else if (n == 1) {
+
+		square = square / 2;
+		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
+	}
+	// if n = 2, either draw single square or recursive pattern
+	else if (n == 2) {
+
+		// if square is odd or small
+		if (((square % 2) != 0) || (square <= 4)) {
+			writeRecursiveSquareImage(xLL, yLL, xUR, yUR, square, field, image, 0);
+		}
+		else {
+			square = square / 2;
+
+			for (int i = xLL; i < xUR; i = i + square) {
+				for (int j = yLL; j < yUR; j = j + square) {
+					if ((i == (xLL + square)) && (j == (yLL + square))) {
+						writeRecursiveSquareImage(i, j, xUR, yUR, square, field, image, 2);
+					}
+					// if (0, 1) or (1, 0) square, subdivide it)
+					else if ((i == (xLL + square)) || (j == (yLL + square))) {
+						if (i == (xLL + square)) {
+							writeRecursiveSquareImage(i, j, i + square, j + square, square, field, image, 1);
+						}
+						else if (j == (yLL + square)) {
+							writeRecursiveSquareImage(i, j, i + square, j + square, square, field, image, 1);
+						}
+					}
+					// if base square draw it
+					else {
+						writeRecursiveSquareImage(i, j, i + square, j + square, square, field, image, 0);
+					}
+				}
+			}
+		}
+	}
+
+}
+// Creates a gif from a LinearField effect
+void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
+	std::vector< Magick::Image > frames;
+	std::string dimensions = std::to_string(square) + "x" + std::to_string(square);
+
+	while (!field.finishedEffect()) {
+		Magick::Image testImage(dimensions.c_str(), "white");
+		if (option == 1) {
+			writeRecursiveSquareImage(0, 0, square, square, square, field, testImage, 2);
+		}
+		else if (option == 2) {
+			writeRecursiveDiagonalSquareImage(0, 0, square, square, square, field, testImage, 1);
+		}
+		testImage.animationDelay(10);
+
+		frames.push_back(testImage);
+		field.stepForward();
+	}
+
+	Magick::writeImages(frames.begin(), frames.end(), "test.gif");
+}
+
+
 
 LinearField* LinearFieldBuilder(int x, int y) {
 	std::string colourStr1;
@@ -227,6 +338,35 @@ void squareTilingTest() {
 	ColourField* field = fieldFactory(option, x, y);
 
 	writeSquareBiasedGif(x, y, square, *field);
+	delete field;
+
+	std::cin.get();
+}
+
+void recursiveSubdivideSquare(){
+	Magick::InitializeMagick("C:\\ImageMagick");
+
+	std::cout << "Recursive Square Tiling Test" << std::endl;
+
+	std::string colourStr1;
+	std::string colourStr2;
+
+	int square;
+	int optionField;
+	int optionTiling;
+
+	std::cout << "Please enter the square size: ";
+	std::cin >> square;
+
+	std::cout << "Please enter the type of field (1 for radial, 2 for linear)";
+	std::cin >> optionField;
+
+	std::cout << "Please enter 1 for left diagonal to right, 2 for split diagonal";
+	std::cin >> optionTiling;
+
+	ColourField* field = fieldFactory(optionField, square, square);
+
+	writeRecursiveSquareBiasedGif(square, *field, optionTiling);
 	delete field;
 
 	std::cin.get();

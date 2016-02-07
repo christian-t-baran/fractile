@@ -55,7 +55,17 @@ void colorfields() {
 }
 
 void tiling() {
-	squareTilingTest();
+	int option;
+
+	std::cout << "1 for basic square tiling, 2 for recursive square tiling" << std::endl;
+	std::cin >> option;
+
+	if ( option == 1) {
+		squareTilingTest();
+	}
+	else if (option == 2) {
+		recursiveSubdivideSquare();
+	}
 }
 
 int main() {
