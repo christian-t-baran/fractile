@@ -6,6 +6,10 @@
 #include "colourField.h"
 #include "fieldGeometry.h"
 
+RadialField::RadialField() {
+
+}
+
 RadialField::RadialField(std::vector<Colour> colours, int radius, double bias) {
 	_colours = colours;
 	_curColours = colours;

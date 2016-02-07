@@ -7,6 +7,8 @@
 
 #include "../colourFields/linearField.h"
 #include "../colourFields/radialField.h"
+#include "../colourFields/radialSquareField.h"
+#include "../colourFields/radialXField.h"
 #include "../colourFields/colourField.h"
 #include "../colours/colour.h"
 #include "../colours/colourConversion.h"
@@ -56,7 +58,7 @@ void writeSquareBiasedGif(int x, int y, int square, ColourField& field) {
 
 
 void writeRecursiveDiagonalSquareImage
-	(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image, int n){
+	(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image, bool period, int n){
 	// if drawing full square
 	if (n == 0) {
 		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
@@ -65,30 +67,54 @@ void writeRecursiveDiagonalSquareImage
 	else if (n == 1) {
 		// if square is odd or small
 		if (((square % 2) != 0) || (square <= 4)) {
-			writeRecursiveDiagonalSquareImage(xLL, yLL, xUR, yUR, square, field, image, 0);
+			writeRecursiveDiagonalSquareImage(xLL, yLL, xUR, yUR, square, field, image, !period, 0);
 		}
 		else {
 			square = square / 2;
 
-			for (int i = xLL; i < xUR; i = i + square) {
-				for (int j = yLL; j < yUR; j = j + square) {
-					if ((i == (xLL + square)) && (j == (yLL + square))) {
-						writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 0);
-					}
-					else if ((i == (xLL + square)) || (j == (yLL + square))) {
-						if (i == (xLL + square)) {
-							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 1);
+			if (period) {
+				for (int i = xLL; i < xUR; i = i + square) {
+					for (int j = yLL; j < yUR; j = j + square) {
+						if ((i == (xLL + square)) && (j == (yLL + square))) {
+							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 0);
 						}
-						else if (j == (yLL + square)) {
-							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 1);
+						else if ((i == (xLL + square)) || (j == (yLL + square))) {
+							if (i == (xLL + square)) {
+								writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 1);
+							}
+							else if (j == (yLL + square)) {
+								writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 1);
+							}
 						}
-					}
-					// if base square draw it
-					else {
-						writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, 0);
+						// if base square draw it
+						else {
+							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 0);
+						}
 					}
 				}
 			}
+			else {
+				for (int i = xLL; i < xUR; i = i + square) {
+					for (int j = yLL; j < yUR; j = j + square) {
+						if ((i == (xLL + square)) && (j == (yLL + square))) {
+							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 1);
+						}
+						else if ((i == (xLL + square)) || (j == (yLL + square))) {
+							if (i == (xLL + square)) {
+								writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 0);
+							}
+							else if (j == (yLL + square)) {
+								writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 0);
+							}
+						}
+						// if base square draw it
+						else {
+							writeRecursiveDiagonalSquareImage(i, j, i + square, j + square, square, field, image, !period, 1);
+						}
+					}
+				}
+			}
+			
 		}
 	}
 }
@@ -152,7 +178,7 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 			writeRecursiveSquareImage(0, 0, square, square, square, field, testImage, 2);
 		}
 		else if (option == 2) {
-			writeRecursiveDiagonalSquareImage(0, 0, square, square, square, field, testImage, 1);
+			writeRecursiveDiagonalSquareImage(0, 0, square, square, square, field, testImage, true, 1);
 		}
 		testImage.animationDelay(10);
 
@@ -241,6 +267,7 @@ RadialField* RadialFieldBuilder(int diameter) {
 	std::string colourPulse;
 
 	int step;
+	int fieldType;
 
 	double bias;
 	int effect;
@@ -248,6 +275,8 @@ RadialField* RadialFieldBuilder(int diameter) {
 	double effectBias;
 
 	// get input to create radial field
+	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X): ";
+	std::cin >> fieldType;
 	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse: ";
 	std::cin >> effect;
 	std::cout << "Please enter field step (<= radius): ";
@@ -277,7 +306,17 @@ RadialField* RadialFieldBuilder(int diameter) {
 	colours.push_back(colour1);
 	colours.push_back(colour2);
 
-	RadialField* test = new RadialField(colours, (diameter / 2), bias);
+	RadialField* test;
+
+	if (fieldType == 1) {
+		test = new RadialField(colours, diameter/2, bias);
+	}
+	else if (fieldType == 2) {
+		test = new RadialSquareField(colours, diameter/2, bias);
+	}
+	else if (fieldType == 3) {
+		test = new RadialXField(colours, diameter/2, bias);
+	}
 
 	// set up effect
 	if (effect == 1) {

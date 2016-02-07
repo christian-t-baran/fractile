@@ -12,6 +12,7 @@ class RadialField :
 	public ColourField {
 
 public:
+	RadialField(); // TO DO - fix this ugly hack
 	RadialField(std::vector<Colour>, int, double);
 	~RadialField();
 	void reinitialize() override;

@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "radialField.h"
+#include "radialSquareField.h"
+#include "radialXField.h"
 #include "../colours/colour.h"
 #include "../colours/colourConversion.h"
 
@@ -51,6 +53,7 @@ void effectRadialFieldTest() {
 	std::string colourStr2;
 	std::string colourPulse;
 
+	int fieldType;
 	int radius;
 	int step;
 
@@ -60,7 +63,9 @@ void effectRadialFieldTest() {
 	double effectBias;
 
 	// get input to create radial field
-	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse: ";
+	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X): ";
+	std::cin >> fieldType;
+	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse): ";
 	std::cin >> effect;
 	std::cout << "Please enter radius: ";
 	std::cin >> radius;
@@ -91,7 +96,18 @@ void effectRadialFieldTest() {
 	colours.push_back(colour1);
 	colours.push_back(colour2);
 
-	RadialField test = RadialField(colours, radius, bias);
+	
+	RadialField test;
+
+	if (fieldType == 1) {
+		test = RadialField(colours, radius, bias);
+	}
+	else if (fieldType == 2) {
+		test = RadialSquareField(colours, radius, bias);
+	}
+	else if (fieldType == 3) {
+		test = RadialXField(colours, radius, bias);
+	}
 
 	// set up effect
 	if (effect == 1) {
