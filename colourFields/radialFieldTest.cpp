@@ -4,16 +4,17 @@
 #include <vector>
 
 #include "radialField.h"
+#include "radialDiamondField.h"
 #include "radialSquareField.h"
 #include "radialXField.h"
 #include "../colours/colour.h"
 #include "../colours/colourConversion.h"
 
 // creates image from a radial field
-void writeImage(int imageDim, RadialField field, Magick::Image& image) {
+void writeImage(int imageDim, RadialField* field, Magick::Image& image) {
 	for (int i = 0; i < imageDim; i++) {
 		for (int j = 0; j < imageDim; j++) {
-			Colour fieldCol = field.getColourAt(i, j);
+			Colour fieldCol = (*field).getColourAt(i, j);
 			// std::cout << "Colour at " << i << "," << j << "   " << fieldCol.hex() << std::endl;
 			double r = convertRGBtoDec(fieldCol.getRGB_R());
 			double g = convertRGBtoDec(fieldCol.getRGB_G());
@@ -28,17 +29,17 @@ void writeImage(int imageDim, RadialField field, Magick::Image& image) {
 }
 
 // creates gif from a radial field
-void writeBiasedGif(int imageDim, RadialField field) {
+void writeBiasedGif(int imageDim, RadialField* field) {
 	std::vector< Magick::Image > frames;
 	std::string dimensions = std::to_string(imageDim) + "x" + std::to_string(imageDim);
 
-	while (!field.finishedEffect()) {
+	while (!(*field).finishedEffect()) {
 		Magick::Image testImage(dimensions.c_str(), "white");
 		writeImage(imageDim, field, testImage);
 		testImage.animationDelay(10);
 
 		frames.push_back(testImage);
-		field.stepForward();
+		(*field).stepForward();
 	}
 
 	Magick::writeImages(frames.begin(), frames.end(), "test.gif");
@@ -56,6 +57,7 @@ void effectRadialFieldTest() {
 	int fieldType;
 	int radius;
 	int step;
+	int copies;
 
 	double bias;
 	int effect;
@@ -63,12 +65,14 @@ void effectRadialFieldTest() {
 	double effectBias;
 
 	// get input to create radial field
-	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X): ";
+	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X, 4 - Diamond): ";
 	std::cin >> fieldType;
 	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse): ";
 	std::cin >> effect;
 	std::cout << "Please enter radius: ";
 	std::cin >> radius;
+	std::cout << "Please enter number of copies: ";
+	std::cin >> copies;
 	std::cout << "Please enter field step (<= radius): ";
 	std::cin >> step;
 	std::cout << "Please enter field bias: ";
@@ -97,32 +101,36 @@ void effectRadialFieldTest() {
 	colours.push_back(colour2);
 
 	
-	RadialField test;
+	RadialField* test;
 
 	if (fieldType == 1) {
-		test = RadialField(colours, radius, bias);
+		test = new RadialField(colours, radius, bias);
 	}
 	else if (fieldType == 2) {
-		test = RadialSquareField(colours, radius, bias);
+		test = new RadialSquareField(colours, radius, bias);
 	}
 	else if (fieldType == 3) {
-		test = RadialXField(colours, radius, bias);
+		test = new RadialXField(colours, radius, bias);
+	}
+	else if (fieldType == 4) {
+		test = new RadialDiamondField(colours, radius, bias);
 	}
 
 	// set up effect
 	if (effect == 1) {
-		test.setStrobe(effectStep, effectBias);
+		(*test).setStrobe(effectStep, effectBias);
 	}
 	else if (effect == 2) {
-		test.setConverge(effectStep, effectBias);
+		(*test).setConverge(effectStep, effectBias);
 	}
 	else if (effect == 3) {
 		Colour pulse = Colour(colourPulse);
-		test.setPulse(pulse, effectStep, effectBias);
+		(*test).setPulse(pulse, effectStep, effectBias);
 	}
 	int imageDim = (radius * 2) + 1;
 
-	test.setStep(step);
+	(*test).setStep(step);
+	(*test).setCopies(copies);
 
 	// create gif
 	writeBiasedGif(imageDim, test);
@@ -156,42 +164,42 @@ void basicRadialFieldTest() {
 	colours.push_back(colour1);
 	colours.push_back(colour2);
 
-	RadialField test = RadialField(colours, radius, 0.1);
+	RadialField* test = new RadialField(colours, radius, 0.1);
 
 	int imageDim = (radius * 2) + 1;
 
-	test.setStep(step);
+	(*test).setStep(step);
 
 	std::string dimensions = std::to_string(imageDim) + "x" + std::to_string(imageDim);
 
 	Magick::Image testImage( dimensions.c_str() , "white");
 
 	// create images with a bias of 0, 0.1, 0.25, 0.5, 0.75, 0.9 and 1
-	test.setBias(0);
+	(*test).setBias(0);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias000.png");
 
-	test.setBias(0.1);
+	(*test).setBias(0.1);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias010.png");
 
-	test.setBias(0.25);
+	(*test).setBias(0.25);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias025.png");
 
-	test.setBias(0.5);
+	(*test).setBias(0.5);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias050.png");
 
-	test.setBias(0.75);
+	(*test).setBias(0.75);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias075.png");
 
-	test.setBias(0.9);
+	(*test).setBias(0.9);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias090.png");
 
-	test.setBias(1);
+	(*test).setBias(1);
 	writeImage(imageDim, test, testImage);
 	testImage.write("bias100.png");
 

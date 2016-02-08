@@ -54,6 +54,7 @@ void effectLinearFieldTest() {
 	int y;
 	int axis;
 	int step;
+	int copies;
 
 	double bias;
 	int effect;
@@ -67,6 +68,8 @@ void effectLinearFieldTest() {
 	std::cin >> x;
 	std::cout << "Please enter y length: ";
 	std::cin >> y;
+	std::cout << "Please enter number of copies: ";
+	std::cin >> copies;
 	std::cout << "Enter 1 to gradate on x axis, 2 for y" << std::endl;
 	std::cin >> axis;
 	std::cout << "Please enter field step (<= radius): ";
@@ -117,6 +120,7 @@ void effectLinearFieldTest() {
 	}
 
 	test.setStep(step);
+	test.setCopies(copies);
 
 	writeBiasedGif(x, y, test);
 }

@@ -7,6 +7,7 @@
 
 #include "../colourFields/linearField.h"
 #include "../colourFields/radialField.h"
+#include "../colourFields/radialDiamondField.h"
 #include "../colourFields/radialSquareField.h"
 #include "../colourFields/radialXField.h"
 #include "../colourFields/colourField.h"
@@ -15,24 +16,30 @@
 #include "tilingGeometry.h"
 
 // Creates an image from a LinearField
-void writeSquareImage(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image) {
+
+void writeSquareImage(int x, int y, int square, ColourField& field, Magick::Image& image) {
+	std::pair<int, int> coord = centerRectangle(x, x + square, y, y + square);
+
+	Colour fieldCol = field.getColourAt(coord.first, coord.second);
+	double r = convertRGBtoDec(fieldCol.getRGB_R());
+	double g = convertRGBtoDec(fieldCol.getRGB_G());
+	double b = convertRGBtoDec(fieldCol.getRGB_B());
+
+	Magick::ColorRGB tempCol(r, g, b);
+
+	image.strokeColor(tempCol);
+	image.strokeWidth(0);
+	image.fillColor(tempCol);
+
+	image.draw(Magick::DrawableRectangle(x, y + square, x + square, y));
+}
+
+
+void writeSquares(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image) {
 
 	for (int i = xLL; i < xUR; i = i + square) {
 		for (int j = yLL; j < yUR; j = j + square) {
-			std::pair<int, int> coord = centerRectangle(i, i + square, j, j + square);
-
-			Colour fieldCol = field.getColourAt(coord.first, coord.second);
-			double r = convertRGBtoDec(fieldCol.getRGB_R());
-			double g = convertRGBtoDec(fieldCol.getRGB_G());
-			double b = convertRGBtoDec(fieldCol.getRGB_B());
-
-			Magick::ColorRGB tempCol(r, g, b);
-
-			image.strokeColor(tempCol);
-			image.strokeWidth(0);
-			image.fillColor(tempCol);
-
-			image.draw(Magick::DrawableRectangle(i, j + square, i + square, j));
+			writeSquareImage(i, j, square, field, image);
 		}
 	}
 
@@ -46,7 +53,7 @@ void writeSquareBiasedGif(int x, int y, int square, ColourField& field) {
 
 	while (!field.finishedEffect()) {
 		Magick::Image testImage(dimensions.c_str(), "white");
-		writeSquareImage(0, 0, x, y, square, field, testImage);
+		writeSquares(0, 0, x, y, square, field, testImage);
 		testImage.animationDelay(10);
 
 		frames.push_back(testImage);
@@ -61,7 +68,7 @@ void writeRecursiveDiagonalSquareImage
 	(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image, bool period, int n){
 	// if drawing full square
 	if (n == 0) {
-		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
+		writeSquareImage(xLL, yLL, square, field, image);
 	}
 	// else if drawing secondary square
 	else if (n == 1) {
@@ -124,14 +131,12 @@ void writeRecursiveSquareImage
 
 	// if n = 0, just draw square in specified position
 	if (n == 0) {
-
-		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
+		writeSquareImage(xLL, yLL, square, field, image);
 	}
 	// if n = 1, subdivide square into 4
 	else if (n == 1) {
-
 		square = square / 2;
-		writeSquareImage(xLL, yLL, xUR, yUR, square, field, image);
+		writeSquares(xLL, yLL, xUR, yUR, square, field, image);
 	}
 	// if n = 2, either draw single square or recursive pattern
 	else if (n == 2) {
@@ -198,6 +203,7 @@ LinearField* LinearFieldBuilder(int x, int y) {
 
 	int axis;
 	int step;
+	int copies;
 
 	double bias;
 	int effect;
@@ -205,10 +211,12 @@ LinearField* LinearFieldBuilder(int x, int y) {
 	double effectBias;
 
 	// get input to create linear field
-	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse: " << std::endl;
+	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse): ";
 	std::cin >> effect;
-	std::cout << "Enter 1 to gradate on x axis, 2 for y" << std::endl;
+	std::cout << "Enter 1 to gradate on x axis, 2 for y: ";
 	std::cin >> axis;
+	std::cout << "Please enter number of copies: ";
+	std::cin >> copies;
 	std::cout << "Please enter field step (<= radius): ";
 	std::cin >> step;
 	std::cout << "Please enter field bias: ";
@@ -257,6 +265,7 @@ LinearField* LinearFieldBuilder(int x, int y) {
 	}
 
 	(*test).setStep(step);
+	(*test).setCopies(copies);
 
 	return test;
 }
@@ -268,6 +277,7 @@ RadialField* RadialFieldBuilder(int diameter) {
 
 	int step;
 	int fieldType;
+	int copies;
 
 	double bias;
 	int effect;
@@ -275,10 +285,12 @@ RadialField* RadialFieldBuilder(int diameter) {
 	double effectBias;
 
 	// get input to create radial field
-	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X): ";
+	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X, 4 - diamond): ";
 	std::cin >> fieldType;
-	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse: ";
+	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse): ";
 	std::cin >> effect;
+	std::cout << "Please enter number of copies: ";
+	std::cin >> copies;
 	std::cout << "Please enter field step (<= radius): ";
 	std::cin >> step;
 	std::cout << "Please enter field bias: ";
@@ -309,13 +321,16 @@ RadialField* RadialFieldBuilder(int diameter) {
 	RadialField* test;
 
 	if (fieldType == 1) {
-		test = new RadialField(colours, diameter/2, bias);
+		test = new RadialField(colours, diameter / 2, bias);
 	}
 	else if (fieldType == 2) {
-		test = new RadialSquareField(colours, diameter/2, bias);
+		test = new RadialSquareField(colours, diameter / 2, bias);
 	}
 	else if (fieldType == 3) {
-		test = new RadialXField(colours, diameter/2, bias);
+		test = new RadialXField(colours, diameter / 2, bias);
+	}
+	else if (fieldType == 4) {
+		test = new RadialDiamondField(colours, diameter / 2, bias);
 	}
 
 	// set up effect
@@ -331,6 +346,7 @@ RadialField* RadialFieldBuilder(int diameter) {
 	}
 
 	(*test).setStep(step);
+	(*test).setCopies(copies);
 
 	return test;
 }
@@ -366,9 +382,9 @@ void squareTilingTest() {
 	std::cin >> square;
 	std::cout << "Please enter the number of rows: ";
 	std::cin >> rows;
-	std::cout << "Please enter the number of columns";
+	std::cout << "Please enter the number of columns: ";
 	std::cin >> columns;
-	std::cout << "Please enter the type of field (1 for radial, 2 for linear)";
+	std::cout << "Please enter the type of field (1 for radial, 2 for linear): ";
 	std::cin >> option;
 
 	int x = rows * square;
@@ -397,10 +413,10 @@ void recursiveSubdivideSquare(){
 	std::cout << "Please enter the square size: ";
 	std::cin >> square;
 
-	std::cout << "Please enter the type of field (1 for radial, 2 for linear)";
+	std::cout << "Please enter the type of field (1 for radial, 2 for linear): ";
 	std::cin >> optionField;
 
-	std::cout << "Please enter 1 for left diagonal to right, 2 for split diagonal";
+	std::cout << "Please enter 1 for left diagonal to right, 2 for split diagonal: ";
 	std::cin >> optionTiling;
 
 	ColourField* field = fieldFactory(optionField, square, square);

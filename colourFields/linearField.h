@@ -11,6 +11,7 @@ public:
 
 	void reinitialize() override;
 	void setStep(int) override;
+	void setCopies(int) override;
 	void setBias(double) override;
 	void changeAxis();
 
@@ -29,6 +30,7 @@ protected:
 	int _y;
 	double _bias;
 	int _step;
+	int _copies;
 	bool _xAxis;
 	bool _effect;
 

@@ -32,6 +32,11 @@ Colour RadialSquareField::getColourAt(int x, int y)
 		distance = std::sqrt((field_x * field_x) + (field_y * field_y));
 	}
 
+	// adjust for copies
+	max_distance = max_distance / _copies;
+	int step = _step % max_distance;
+	distance = distance % max_distance;
+
 	// get Colours from vector
 	Colour first = _curColours[0];
 	Colour second = _curColours[1];
@@ -45,9 +50,9 @@ Colour RadialSquareField::getColourAt(int x, int y)
 	double b2 = second.getLAB_B();
 
 	// interpolate new LAB values
-	double l = interpolateDistance(max_distance, distance, _step, l2, l1, _bias);
-	double a = interpolateDistance(max_distance, distance, _step, a2, a1, _bias);
-	double b = interpolateDistance(max_distance, distance, _step, b2, b1, _bias);
+	double l = interpolateDistance(max_distance, distance, step, l2, l1, _bias);
+	double a = interpolateDistance(max_distance, distance, step, a2, a1, _bias);
+	double b = interpolateDistance(max_distance, distance, step, b2, b1, _bias);
 
 	Colour newColour = Colour(l, a, b);
 

@@ -17,6 +17,7 @@ public:
 	virtual void reinitialize() = 0;
 	virtual void setStep(int) = 0;
 	virtual void setBias(double) = 0;
+	virtual void setCopies(int) = 0;
 	virtual Colour getColourAt(int, int) = 0;
 
 	virtual void setPulse(Colour, int, double) = 0;

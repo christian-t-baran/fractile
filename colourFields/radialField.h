@@ -18,6 +18,8 @@ public:
 	void reinitialize() override;
 	void setStep(int) override;
 	void setBias(double) override;
+	void setCopies(int) override;
+
 
 	void setStrobe(int, double) override;
 	void setPulse(Colour, int, double) override;
@@ -33,6 +35,7 @@ protected:
 	int _radius;
 	double _bias;
 	int _step;
+	int _copies;
 	bool _effect;
 
 	Colour _pulseColour;

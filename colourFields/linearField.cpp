@@ -12,6 +12,7 @@ LinearField::LinearField(std::vector<Colour> colours, int x, int y, double bias)
 	_y = y;
 	_bias = bias;
 	_step = 1;
+	_copies = 1;
 	_effect = false;
 	_pulse = false;
 	_strobe = false;
@@ -27,6 +28,7 @@ LinearField::~LinearField()
 void LinearField::reinitialize()
 {
 	_step = 1;
+	_copies = 1;
 	_curColours = _colours;
 	_effect = false;
 	bool _xAxis = true;
@@ -37,6 +39,10 @@ void LinearField::reinitialize()
 
 void LinearField::setStep(int step) {
 	_step = step;
+}
+
+void LinearField::setCopies(int copies) {
+	_copies = copies;
 }
 
 void LinearField::setBias(double bias)
@@ -113,20 +119,24 @@ Colour LinearField::getColourAt(int x, int y)
 	double b2 = second.getLAB_B();
 
 	// interpolate new LAB values
+	int max;
+	int step;
+	int distance;
 
-	double l;
-	double a;
-	double b;
 	if( _xAxis) {
-		l = interpolateDistance(_x, x, _step, l2, l1, _bias);
-		a = interpolateDistance(_x, x, _step, a2, a1, _bias);
-		b = interpolateDistance(_x, x, _step, b2, b1, _bias);
+		max = _x / _copies;
+		step = _step % max;
+		distance = x  % max;
 	}
 	else {
-		l = interpolateDistance(_y, y, _step, l2, l1, _bias);
-		a = interpolateDistance(_y, y, _step, a2, a1, _bias);
-		b = interpolateDistance(_y, y, _step, b2, b1, _bias);
+		max = _y / _copies;
+		step = _step % max;
+		distance = y % max;
 	}
+
+	double l = interpolateDistance(max, distance, step, l2, l1, _bias);
+	double a = interpolateDistance(max, distance, step, a2, a1, _bias);
+	double b = interpolateDistance(max, distance, step, b2, b1, _bias);
 
 	Colour newColour = Colour(l, a, b);
 

@@ -16,6 +16,7 @@ RadialField::RadialField(std::vector<Colour> colours, int radius, double bias) {
 	_radius = radius;
 	_bias = bias;
 	_step = 1;
+	_copies = 1;
 	_effect = false;
 	_pulse = false;
 	_strobe = false;
@@ -30,6 +31,7 @@ RadialField::~RadialField()
 void RadialField::reinitialize()
 {
 	_step = 1;
+	_copies = 1;
 	_curColours = _colours;
 	_effect = false;
 	bool _pulse = false;
@@ -39,6 +41,10 @@ void RadialField::reinitialize()
 
 void RadialField::setStep(int step) {
 	_step = step;
+}
+
+void RadialField::setCopies(int copies) {
+	_copies = copies;
 }
 
 void RadialField::setBias(double bias)
@@ -115,9 +121,12 @@ Colour RadialField::getColourAt(int x, int y)
 	int circle_y = (unit_y * std::sqrt(1 - ( (unit_x * unit_x) / 2.0) )) * _radius;
 
 	// c = sqrt( a^2 + b^2) 
-	int distance = std::sqrt( (circle_x * circle_x) + (circle_y * circle_y) );
-	
-	// std::cout << "Distance " << distance << std::endl;
+	int distance = std::sqrt((circle_x * circle_x) + (circle_y * circle_y));
+
+	// adjust for copies
+	int max = _radius / _copies;
+	int step = _step % max;
+	distance = distance % max;
 
 	// get Colours from vector
 	Colour first = _curColours[0];
@@ -132,9 +141,9 @@ Colour RadialField::getColourAt(int x, int y)
 	double b2 = second.getLAB_B();
 
 	// interpolate new LAB values
-	double l = interpolateDistance(_radius, distance, _step, l2, l1, _bias);
-	double a = interpolateDistance(_radius, distance, _step, a2, a1, _bias);
-	double b = interpolateDistance(_radius, distance, _step, b2, b1, _bias);
+	double l = interpolateDistance(max, distance, step, l2, l1, _bias);
+	double a = interpolateDistance(max, distance, step, a2, a1, _bias);
+	double b = interpolateDistance(max, distance, step, b2, b1, _bias);
 	
 	Colour newColour = Colour(l, a, b);
 

@@ -10,7 +10,7 @@
 void linearField() {
 	int option;
 	 
-	std::cout << "1 for animation tests, 2 for basic gradients" << std::endl;
+	std::cout << "1 for animation tests, 2 for basic gradients: " << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
@@ -27,7 +27,7 @@ void linearField() {
 void radialField() {
 	int option;
 
-	std::cout << "1 for animation tests, 2 for basic gradients" << std::endl;
+	std::cout << "1 for animation tests, 2 for basic gradients: " << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
@@ -40,10 +40,10 @@ void radialField() {
 	std::cin.get();
 }
 
-void colorfields() {
+void colourFields() {
 	int option;
 
-	std::cout << "1 for radial field tests, 2 for linear field tests" << std::endl;
+	std::cout << "1 for radial field tests, 2 for linear field tests: " << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
@@ -57,7 +57,7 @@ void colorfields() {
 void tiling() {
 	int option;
 
-	std::cout << "1 for basic square tiling, 2 for recursive square tiling" << std::endl;
+	std::cout << "1 for basic square tiling, 2 for recursive square tiling: " << std::endl;
 	std::cin >> option;
 
 	if ( option == 1) {
@@ -68,9 +68,8 @@ void tiling() {
 	}
 }
 
-int main() {
-	int option;
-	/*
+void colourTests() {
+	
 	std::cout << "Colour conversion tests: " << std::endl;
 	colourConversionTests();
 	std::cout << std::endl << std::endl << std::endl;
@@ -86,16 +85,25 @@ int main() {
 	std::cout << "Colour LAB constructor tests: " << std::endl;
 	colourTestsLAB();
 	std::cout << std::endl << std::endl << std::endl;
-	*/
+	
+	std::cin.get();
+}
 
-	std::cout << "1 for tiling tests, 2 for field tests" << std::endl;
+int main() {
+	int option;
+	
+
+	std::cout << "1 for tiling tests, 2 for field tests, 3 for colour conversion + colour tests: " << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
 		tiling();
 	}
 	else if (option == 2) {
-		colorfields();
+		colourFields();
+	}
+	else if (option == 3) {
+		colourTests();
 	}
 
 	std::cin.get();
