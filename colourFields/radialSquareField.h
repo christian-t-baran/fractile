@@ -18,7 +18,7 @@ public:
 		RadialField(colours, radius, bias) {};
 	~RadialSquareField();
 
-	Colour getColourAt(int, int) override;
+	Colour getColourAt(int, int);
 };
 
 #endif

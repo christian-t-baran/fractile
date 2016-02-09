@@ -11,13 +11,6 @@ LinearField::LinearField(std::vector<Colour> colours, int x, int y, double bias)
 	_x = x;
 	_y = y;
 	_bias = bias;
-	_step = 1;
-	_copies = 1;
-	_effect = false;
-	_pulse = false;
-	_strobe = false;
-	_converge = false;
-	_xAxis = true;
 }
 
 
@@ -25,31 +18,14 @@ LinearField::~LinearField()
 {
 }
 
+// resets effect state
 void LinearField::reinitialize()
 {
-	_step = 1;
-	_copies = 1;
 	_curColours = _colours;
-	_effect = false;
-	bool _xAxis = true;
-	bool _pulse = false;
-	bool _strobe = false;
-	bool _converge = false;
+	_effectStepCur = 0;
 }
 
-void LinearField::setStep(int step) {
-	_step = step;
-}
-
-void LinearField::setCopies(int copies) {
-	_copies = copies;
-}
-
-void LinearField::setBias(double bias)
-{
-	_bias = bias;
-}
-
+// Sets up a strobe effect
 void LinearField::setStrobe(int steps, double bias) {
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
@@ -60,6 +36,7 @@ void LinearField::setStrobe(int steps, double bias) {
 	_converge = false;
 }
 
+// Sets up a pulse effect
 void LinearField::setPulse(Colour pulse, int steps, double bias) {
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
@@ -71,6 +48,7 @@ void LinearField::setPulse(Colour pulse, int steps, double bias) {
 	_converge = false;
 }
 
+// Sets up a converge effect
 void LinearField::setConverge(int steps, double bias) {
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
@@ -81,6 +59,7 @@ void LinearField::setConverge(int steps, double bias) {
 	_converge = true;
 }
 
+// Steps effect forward
 void LinearField::stepForward() {
 	if (_effect && (!finishedEffect())) {
 		if (_strobe) {
@@ -96,11 +75,6 @@ void LinearField::stepForward() {
 	}
 
 	_effectStepCur++;
-}
-
-bool LinearField::finishedEffect()
-{
-	return _effectStepCur >= _effectStepTotal;
 }
 
 // Returns the Colour value at (x, y) pt in the field

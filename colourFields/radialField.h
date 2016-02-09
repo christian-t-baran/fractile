@@ -15,41 +15,25 @@ public:
 	RadialField(); // TO DO - fix this ugly hack
 	RadialField(std::vector<Colour>, int, double);
 	~RadialField();
-	void reinitialize() override;
-	void setStep(int) override;
-	void setBias(double) override;
-	void setCopies(int) override;
 
+	void reinitialize() override;
 
 	void setStrobe(int, double) override;
 	void setPulse(Colour, int, double) override;
 	void setConverge(int, double) override;
-	void stepForward();
-	bool finishedEffect() override;
+
+	void stepForward() override;
 
 	Colour getColourAt(int, int) override;
 
 protected:
 	std::vector<Colour> _colours;
 	std::vector<Colour> _curColours;
-	int _radius;
-	double _bias;
-	int _step;
-	int _copies;
-	bool _effect;
 
-	Colour _pulseColour;
-	bool _pulse = false;
-	bool _strobe = false;
-	bool _converge = false;
-	int _effectStepTotal;
-	int _effectStepCur;
-	double _effectBias;
+	int _radius;
 
 private:
 	Colour stepEffect(Colour, Colour);
 };
-
-void radialFieldTests();
 
 #endif

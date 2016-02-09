@@ -1,3 +1,5 @@
+#include "../colourFields/colourField.h"
+
 #ifndef SQUARE_TILING_H
 #define SQUARE_TILING_H
 
@@ -5,5 +7,6 @@
 
 void squareTilingTest();
 void recursiveSubdivideSquare();
+// void sierpinskiCarpet();
 
 #endif

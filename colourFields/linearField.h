@@ -10,16 +10,12 @@ public:
 	~LinearField();
 
 	void reinitialize() override;
-	void setStep(int) override;
-	void setCopies(int) override;
-	void setBias(double) override;
 	void changeAxis();
 
 	void setStrobe(int, double) override;
 	void setPulse(Colour, int, double) override;
 	void setConverge(int, double) override;
-	void stepForward();
-	bool finishedEffect() override;
+	void stepForward() override;
 
 	Colour getColourAt(int, int) override;
 
@@ -28,19 +24,8 @@ protected:
 	std::vector<Colour> _curColours;
 	int _x;
 	int _y;
-	double _bias;
-	int _step;
-	int _copies;
-	bool _xAxis;
-	bool _effect;
 
-	Colour _pulseColour;
-	bool _pulse = false;
-	bool _strobe = false;
-	bool _converge = false;
-	int _effectStepTotal;
-	int _effectStepCur;
-	double _effectBias;
+	bool _xAxis = true;
 
 private:
 	Colour stepEffect(Colour, Colour);

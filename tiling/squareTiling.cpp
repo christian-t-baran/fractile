@@ -5,14 +5,11 @@
 #include <vector>
 
 
-#include "../colourFields/linearField.h"
-#include "../colourFields/radialField.h"
-#include "../colourFields/radialDiamondField.h"
-#include "../colourFields/radialSquareField.h"
-#include "../colourFields/radialXField.h"
+#include "../colourFields/fieldFactory.h"
 #include "../colourFields/colourField.h"
 #include "../colours/colour.h"
 #include "../colours/colourConversion.h"
+#include "squareTiling.h"
 #include "tilingGeometry.h"
 
 // Creates an image from a LinearField
@@ -172,10 +169,36 @@ void writeRecursiveSquareImage
 	}
 
 }
+
+void sierpinskiCarpet(int xLL, int yLL, int xUR, int yUR, int square, ColourField& fieldFill, ColourField& fieldBack, Magick::Image& image) {
+	square = square / 3;
+
+	for (int i = xLL; i < xUR; i = i + square) {
+		for (int j = yLL; j < yUR; j = j + square) {
+			if ((i == xLL + square) && (j == yLL + square) ){
+				writeSquareImage(i, j, square, fieldBack, image);
+			}
+			else if (square <= 9) {
+				writeSquareImage(i, j, square, fieldFill, image);
+			}
+			else {
+				sierpinskiCarpet(i, j, i + square, j + square, square, fieldFill, fieldBack, image);
+			}
+		}
+	}
+
+
+}
+
 // Creates a gif from a LinearField effect
 void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 	std::vector< Magick::Image > frames;
 	std::string dimensions = std::to_string(square) + "x" + std::to_string(square);
+	ColourField* back;
+
+	if (option == 3) {
+		back = fieldFactory(square, square);
+	}
 
 	while (!field.finishedEffect()) {
 		Magick::Image testImage(dimensions.c_str(), "white");
@@ -184,6 +207,17 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 		}
 		else if (option == 2) {
 			writeRecursiveDiagonalSquareImage(0, 0, square, square, square, field, testImage, true, 1);
+		}
+		else if (option == 3) {
+			Colour colour1 = Colour(0, 0, 0);
+			Colour colour2 = Colour(0, 0, 0);
+
+			std::vector<Colour> colours = std::vector<Colour>();
+			colours.push_back(colour1);
+			colours.push_back(colour2);
+
+			sierpinskiCarpet(0, 0, square, square, square, field, *back, testImage);
+
 		}
 		testImage.animationDelay(10);
 
@@ -194,175 +228,6 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 	Magick::writeImages(frames.begin(), frames.end(), "test.gif");
 }
 
-
-
-LinearField* LinearFieldBuilder(int x, int y) {
-	std::string colourStr1;
-	std::string colourStr2;
-	std::string colourPulse;
-
-	int axis;
-	int step;
-	int copies;
-
-	double bias;
-	int effect;
-	int effectStep;
-	double effectBias;
-
-	// get input to create linear field
-	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse): ";
-	std::cin >> effect;
-	std::cout << "Enter 1 to gradate on x axis, 2 for y: ";
-	std::cin >> axis;
-	std::cout << "Please enter number of copies: ";
-	std::cin >> copies;
-	std::cout << "Please enter field step (<= radius): ";
-	std::cin >> step;
-	std::cout << "Please enter field bias: ";
-	std::cin >> bias;
-	std::cout << "Please enter effect step: ";
-	std::cin >> effectStep;
-	std::cout << "Please enter effect bias: ";
-	std::cin >> effectBias;
-	std::cout << "Please enter first colour (#HEX): ";
-	std::cin >> colourStr1;
-	std::cout << "Please enter second colour (#HEX): ";
-	std::cin >> colourStr2;
-
-	// get pulse colour if it applies
-	if (effect == 3) {
-		std::cout << "Please enter pulse colour (#HEX): ";
-		std::cin >> colourPulse;
-
-	}
-
-	Colour colour1 = Colour(colourStr1);
-	Colour colour2 = Colour(colourStr2);
-
-	std::vector<Colour> colours = std::vector<Colour>();
-
-	colours.push_back(colour1);
-	colours.push_back(colour2);
-
-	LinearField* test = new LinearField(colours, x, y, bias);
-
-	// set up effect
-	if (effect == 1) {
-		(*test).setStrobe(effectStep, effectBias);
-	}
-	else if (effect == 2) {
-		(*test).setConverge(effectStep, effectBias);
-	}
-	else if (effect == 3) {
-		Colour pulse = Colour(colourPulse);
-		(*test).setPulse(pulse, effectStep, effectBias);
-	}
-
-	// change axis if y was selected
-	if (axis == 2) {
-		(*test).changeAxis();
-	}
-
-	(*test).setStep(step);
-	(*test).setCopies(copies);
-
-	return test;
-}
-
-RadialField* RadialFieldBuilder(int diameter) {
-	std::string colourStr1;
-	std::string colourStr2;
-	std::string colourPulse;
-
-	int step;
-	int fieldType;
-	int copies;
-
-	double bias;
-	int effect;
-	int effectStep;
-	double effectBias;
-
-	// get input to create radial field
-	std::cout << "Please enter field type (1 - mapped circle, 2 - square, 3 - X, 4 - diamond): ";
-	std::cin >> fieldType;
-	std::cout << "Please enter effect mode (1 - strobe, 2 - converge, 3 - pulse): ";
-	std::cin >> effect;
-	std::cout << "Please enter number of copies: ";
-	std::cin >> copies;
-	std::cout << "Please enter field step (<= radius): ";
-	std::cin >> step;
-	std::cout << "Please enter field bias: ";
-	std::cin >> bias;
-	std::cout << "Please enter effect step: ";
-	std::cin >> effectStep;
-	std::cout << "Please enter effect bias: ";
-	std::cin >> effectBias;
-	std::cout << "Please enter first colour (#HEX): ";
-	std::cin >> colourStr1;
-	std::cout << "Please enter second colour (#HEX): ";
-	std::cin >> colourStr2;
-	// get pulse colour if selected
-	if (effect == 3) {
-		std::cout << "Please enter pulse colour (#HEX): ";
-		std::cin >> colourPulse;
-
-	}
-
-	Colour colour1 = Colour(colourStr1);
-	Colour colour2 = Colour(colourStr2);
-
-	std::vector<Colour> colours = std::vector<Colour>();
-
-	colours.push_back(colour1);
-	colours.push_back(colour2);
-
-	RadialField* test;
-
-	if (fieldType == 1) {
-		test = new RadialField(colours, diameter / 2, bias);
-	}
-	else if (fieldType == 2) {
-		test = new RadialSquareField(colours, diameter / 2, bias);
-	}
-	else if (fieldType == 3) {
-		test = new RadialXField(colours, diameter / 2, bias);
-	}
-	else if (fieldType == 4) {
-		test = new RadialDiamondField(colours, diameter / 2, bias);
-	}
-
-	// set up effect
-	if (effect == 1) {
-		(*test).setStrobe(effectStep, effectBias);
-	}
-	else if (effect == 2) {
-		(*test).setConverge(effectStep, effectBias);
-	}
-	else if (effect == 3) {
-		Colour pulse = Colour(colourPulse);
-		(*test).setPulse(pulse, effectStep, effectBias);
-	}
-
-	(*test).setStep(step);
-	(*test).setCopies(copies);
-
-	return test;
-}
-
-ColourField* fieldFactory(int option, int x, int y) {
-	ColourField* field(NULL);
-
-	if (option == 1) {
-		field = RadialFieldBuilder(x);
-	}
-	else if (option == 2) {
-		field = LinearFieldBuilder(x, y);
-	}
-
-	return field;
-}
 
 void squareTilingTest() {
 	Magick::InitializeMagick("C:\\ImageMagick");
@@ -376,7 +241,6 @@ void squareTilingTest() {
 	int square;
 	int columns;
 	int rows;
-	int option;
 
 	std::cout << "Please enter the square size: ";
 	std::cin >> square;
@@ -384,13 +248,11 @@ void squareTilingTest() {
 	std::cin >> rows;
 	std::cout << "Please enter the number of columns: ";
 	std::cin >> columns;
-	std::cout << "Please enter the type of field (1 for radial, 2 for linear): ";
-	std::cin >> option;
-
+	
 	int x = rows * square;
 	int y = columns * square;
 
-	ColourField* field = fieldFactory(option, x, y);
+	ColourField* field = fieldFactory(x, y);
 
 	writeSquareBiasedGif(x, y, square, *field);
 	delete field;
@@ -407,19 +269,15 @@ void recursiveSubdivideSquare(){
 	std::string colourStr2;
 
 	int square;
-	int optionField;
 	int optionTiling;
 
 	std::cout << "Please enter the square size: ";
 	std::cin >> square;
 
-	std::cout << "Please enter the type of field (1 for radial, 2 for linear): ";
-	std::cin >> optionField;
-
-	std::cout << "Please enter 1 for left diagonal to right, 2 for split diagonal: ";
+	std::cout << "Please enter 1 for left diagonal to right, 2 for split diagonal, 3 for Sierpinski Carpet: ";
 	std::cin >> optionTiling;
 
-	ColourField* field = fieldFactory(optionField, square, square);
+	ColourField* field = fieldFactory(square, square);
 
 	writeRecursiveSquareBiasedGif(square, *field, optionTiling);
 	delete field;

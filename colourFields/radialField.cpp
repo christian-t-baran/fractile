@@ -15,12 +15,6 @@ RadialField::RadialField(std::vector<Colour> colours, int radius, double bias) {
 	_curColours = colours;
 	_radius = radius;
 	_bias = bias;
-	_step = 1;
-	_copies = 1;
-	_effect = false;
-	_pulse = false;
-	_strobe = false;
-	_converge = false;
 }
 
 RadialField::~RadialField()
@@ -28,30 +22,14 @@ RadialField::~RadialField()
 	
 }
 
+// resets effect state
 void RadialField::reinitialize()
 {
-	_step = 1;
-	_copies = 1;
 	_curColours = _colours;
-	_effect = false;
-	bool _pulse = false;
-	bool _strobe = false;
-	bool _converge = false;
+	_effectStepCur = 0;
 }
 
-void RadialField::setStep(int step) {
-	_step = step;
-}
-
-void RadialField::setCopies(int copies) {
-	_copies = copies;
-}
-
-void RadialField::setBias(double bias)
-{
-	_bias = bias;
-}
-
+// Sets up a strobe effect
 void RadialField::setStrobe(int steps, double bias){
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
@@ -62,6 +40,7 @@ void RadialField::setStrobe(int steps, double bias){
 	_converge = false;
 }
 
+// Sets up a pulse effect
 void RadialField::setPulse(Colour pulse, int steps, double bias){
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
@@ -73,6 +52,7 @@ void RadialField::setPulse(Colour pulse, int steps, double bias){
 	_converge = false;
 }
 
+// Sets up a converge effect
 void RadialField::setConverge(int steps, double bias){
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
@@ -83,6 +63,7 @@ void RadialField::setConverge(int steps, double bias){
 	_converge = true;
 }
 
+// Steps effect forward
 void RadialField::stepForward() {
 	if (_effect && ( !finishedEffect() ) ){
 		if (_strobe) {
@@ -98,11 +79,6 @@ void RadialField::stepForward() {
 	}
 
 	_effectStepCur++;
-}
-
-bool RadialField::finishedEffect()
-{
-	return _effectStepCur >= _effectStepTotal;
 }
 
 // Returns the Colour value at (x, y) pt in the field
@@ -199,6 +175,3 @@ Colour RadialField::stepEffect(Colour c1, Colour c2){
 	return newCol;
 }
 
-void radialFieldTests()
-{
-}

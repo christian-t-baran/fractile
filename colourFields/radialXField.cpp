@@ -13,7 +13,6 @@ Colour RadialXField::getColourAt(int x, int y)
 	int field_x = std::abs(x - _radius);
 	int field_y = std::abs(y - _radius);
 
-	int max_distance = _radius / 6;
 
 	int distance;
 
@@ -23,7 +22,9 @@ Colour RadialXField::getColourAt(int x, int y)
 	else {
 		distance = field_y - field_x;
 	}
-	
+
+	int max_distance = _radius / _copies;
+	int step = _step % max_distance;
 	distance = distance % max_distance;
 	
 	// get Colours from vector
@@ -39,9 +40,9 @@ Colour RadialXField::getColourAt(int x, int y)
 	double b2 = second.getLAB_B();
 
 	// interpolate new LAB values
-	double l = interpolateDistance(max_distance, distance, _step, l2, l1, _bias);
-	double a = interpolateDistance(max_distance, distance, _step, a2, a1, _bias);
-	double b = interpolateDistance(max_distance, distance, _step, b2, b1, _bias);
+	double l = interpolateDistance(max_distance, distance, step, l2, l1, _bias);
+	double a = interpolateDistance(max_distance, distance, step, a2, a1, _bias);
+	double b = interpolateDistance(max_distance, distance, step, b2, b1, _bias);
 
 	Colour newColour = Colour(l, a, b);
 
