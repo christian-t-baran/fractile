@@ -7,6 +7,5 @@
 
 void squareTilingTest();
 void recursiveSubdivideSquare();
-// void sierpinskiCarpet();
 
 #endif

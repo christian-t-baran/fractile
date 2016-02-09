@@ -1,70 +1,43 @@
 #include <iostream>
+#include <Magick++.h>
 
 #include "colours/colour.h"
 #include "colours/colourConversion.h"
-#include "colourFields/radialFieldTest.h"
-#include "colourFields/linearFieldTest.h"
-#include "tiling\squareTiling.h"
+#include "colourFields/fieldTest.h"
+#include "tiling/squareTiling.h"
+#include "tiling/triangleTiling.h"
 
 // handles linear field tests
-void linearField() {
-	int option;
-	 
-	std::cout << "1 for animation tests, 2 for basic gradients: " << std::endl;
-	std::cin >> option;
-
-	if (option == 1) {
-		effectLinearFieldTest();
-	}
-	else if (option == 2) {
-		basicRadialFieldTest();
-	}
-
-	std::cin.get();
-}
-
-// handles radial field tests
-void radialField() {
-	int option;
-
-	std::cout << "1 for animation tests, 2 for basic gradients: " << std::endl;
-	std::cin >> option;
-
-	if (option == 1) {
-		effectRadialFieldTest();
-	}
-	else if (option == 2) {
-		basicRadialFieldTest();
-	}
-
-	std::cin.get();
-}
 
 void colourFields() {
+	fieldTest();
+}
+
+void squareTiling() {
 	int option;
 
-	std::cout << "1 for radial field tests, 2 for linear field tests: " << std::endl;
+	std::cout << "1 for basic square tiling, 2 for recursive square tiling: " << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
-		radialField();
+		squareTilingTest();
 	}
 	else if (option == 2) {
-		linearField();
+		recursiveSubdivideSquare();
 	}
 }
 
 void tiling() {
 	int option;
 
-	std::cout << "1 for basic square tiling, 2 for recursive square tiling: " << std::endl;
+	std::cout << "1 for square tiling, 2 for triangle tiling: " << std::endl;
 	std::cin >> option;
 
 	if ( option == 1) {
 		squareTilingTest();
 	}
 	else if (option == 2) {
-		recursiveSubdivideSquare();
+		triangleTilingTest();
 	}
 }
 
@@ -91,7 +64,9 @@ void colourTests() {
 
 int main() {
 	int option;
-	
+
+	Magick::InitializeMagick("C:\\ImageMagick");
+
 
 	std::cout << "1 for tiling tests, 2 for field tests, 3 for colour conversion + colour tests: " << std::endl;
 	std::cin >> option;

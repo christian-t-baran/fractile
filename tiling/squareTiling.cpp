@@ -9,34 +9,20 @@
 #include "../colourFields/colourField.h"
 #include "../colours/colour.h"
 #include "../colours/colourConversion.h"
+#include "../tiles/rectangle.h"
+#include "drawing.h"
 #include "squareTiling.h"
 #include "tilingGeometry.h"
 
 // Creates an image from a LinearField
 
-void writeSquareImage(int x, int y, int square, ColourField& field, Magick::Image& image) {
-	std::pair<int, int> coord = centerRectangle(x, x + square, y, y + square);
-
-	Colour fieldCol = field.getColourAt(coord.first, coord.second);
-	double r = convertRGBtoDec(fieldCol.getRGB_R());
-	double g = convertRGBtoDec(fieldCol.getRGB_G());
-	double b = convertRGBtoDec(fieldCol.getRGB_B());
-
-	Magick::ColorRGB tempCol(r, g, b);
-
-	image.strokeColor(tempCol);
-	image.strokeWidth(0);
-	image.fillColor(tempCol);
-
-	image.draw(Magick::DrawableRectangle(x, y + square, x + square, y));
-}
-
-
 void writeSquares(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image) {
 
 	for (int i = xLL; i < xUR; i = i + square) {
 		for (int j = yLL; j < yUR; j = j + square) {
-			writeSquareImage(i, j, square, field, image);
+			Rectangle square(i, j, square, square);
+
+			drawShape(square, field, image);
 		}
 	}
 
@@ -65,7 +51,9 @@ void writeRecursiveDiagonalSquareImage
 	(int xLL, int yLL, int xUR, int yUR, int square, ColourField& field, Magick::Image& image, bool period, int n){
 	// if drawing full square
 	if (n == 0) {
-		writeSquareImage(xLL, yLL, square, field, image);
+		Rectangle shape(xLL, yLL, square, square);
+
+		drawShape(shape, field, image);
 	}
 	// else if drawing secondary square
 	else if (n == 1) {
@@ -128,7 +116,9 @@ void writeRecursiveSquareImage
 
 	// if n = 0, just draw square in specified position
 	if (n == 0) {
-		writeSquareImage(xLL, yLL, square, field, image);
+		Rectangle shape(xLL, yLL, square, square);
+
+		drawShape(shape, field, image);
 	}
 	// if n = 1, subdivide square into 4
 	else if (n == 1) {
@@ -176,10 +166,14 @@ void sierpinskiCarpet(int xLL, int yLL, int xUR, int yUR, int square, ColourFiel
 	for (int i = xLL; i < xUR; i = i + square) {
 		for (int j = yLL; j < yUR; j = j + square) {
 			if ((i == xLL + square) && (j == yLL + square) ){
-				writeSquareImage(i, j, square, fieldBack, image);
+				Rectangle shape(i, j, square, square);
+
+				drawShape(shape, fieldBack, image);
 			}
 			else if (square <= 9) {
-				writeSquareImage(i, j, square, fieldFill, image);
+				Rectangle shape(i, j, square, square);
+
+				drawShape(shape, fieldFill, image);
 			}
 			else {
 				sierpinskiCarpet(i, j, i + square, j + square, square, fieldFill, fieldBack, image);
@@ -196,11 +190,18 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 	std::string dimensions = std::to_string(square) + "x" + std::to_string(square);
 	ColourField* back;
 
+	int iterations;
+
 	if (option == 3) {
 		back = fieldFactory(square, square);
+		iterations = LCM(field.effectStepTotal(), (*back).effectStepTotal() );
+	}
+	else {
+		iterations = field.effectStepTotal();
 	}
 
-	while (!field.finishedEffect()) {
+	
+	for (int i = 0; i < iterations; i++) {
 		Magick::Image testImage(dimensions.c_str(), "white");
 		if (option == 1) {
 			writeRecursiveSquareImage(0, 0, square, square, square, field, testImage, 2);
@@ -209,6 +210,13 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 			writeRecursiveDiagonalSquareImage(0, 0, square, square, square, field, testImage, true, 1);
 		}
 		else if (option == 3) {
+			if (field.finishedEffect()) {
+				field.reinitialize();
+			}
+			if ((*back).finishedEffect()) {
+				(*back).reinitialize();
+			}
+
 			Colour colour1 = Colour(0, 0, 0);
 			Colour colour2 = Colour(0, 0, 0);
 
@@ -223,6 +231,9 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 
 		frames.push_back(testImage);
 		field.stepForward();
+		if (option == 3) {
+			(*back).stepForward();
+		}
 	}
 
 	Magick::writeImages(frames.begin(), frames.end(), "test.gif");
@@ -230,8 +241,6 @@ void writeRecursiveSquareBiasedGif(int square, ColourField& field, int option) {
 
 
 void squareTilingTest() {
-	Magick::InitializeMagick("C:\\ImageMagick");
-
 	std::cout << "Basic Square Tiling Test" << std::endl;
 
 

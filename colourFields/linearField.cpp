@@ -97,7 +97,7 @@ Colour LinearField::getColourAt(int x, int y)
 	int step;
 	int distance;
 
-	if( _xAxis) {
+	if(_xAxis) {
 		max = _x / _copies;
 		step = _step % max;
 		distance = x  % max;

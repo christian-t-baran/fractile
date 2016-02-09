@@ -46,6 +46,7 @@ void ColourField::setConverge(int steps, double bias) {
 }
 
 void ColourField::stepForward() {
+	++_effectStepCur;
 }
 
 bool ColourField::finishedEffect() {

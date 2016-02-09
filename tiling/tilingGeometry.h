@@ -9,6 +9,8 @@ int GCD(int, int);
 
 std::pair<int, int> midpoint(int, int, int, int);
 
+double segmentLength(int, int, int, int);
+
 std::pair<int, int> centerRectangle(int, int, int, int);
 std::pair<int, int> centerTriangle(int, int, int, int, int, int);
 
