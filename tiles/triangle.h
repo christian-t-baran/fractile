@@ -18,6 +18,11 @@ public:
 	std::pair<int, int> getCenterCoord() override;
 	double getArea() override;
 	Magick::Drawable getDrawable() override;
+	std::string toString() override;
+
+	std::pair<int, int> getA();
+	std::pair<int, int> getB();
+	std::pair<int, int> getC();
 
 protected:
 	int _aX;

@@ -14,8 +14,8 @@ class RadialDiamondField :
 	public RadialField {
 
 public:
-	RadialDiamondField(std::vector<Colour> colours, int radius, double bias) :
-		RadialField(colours, radius, bias) {};
+	RadialDiamondField(std::vector<Colour> colours, int x, int y, double bias) :
+		RadialField(colours, x, y, bias) {};
 	~RadialDiamondField();
 
 	Colour getColourAt(int, int);

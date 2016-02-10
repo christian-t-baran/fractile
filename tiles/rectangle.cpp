@@ -33,3 +33,15 @@ Magick::Drawable Rectangle::getDrawable()
 	return Magick::DrawableRectangle(_xLL, _yLL + _yLength, _xLL + _xLength, _yLL);
 }
 
+std::string Rectangle::toString()
+{
+	std::string data;
+	data += "x corner: " + std::to_string(_xLL) + "\n";
+	data += "x length: " + std::to_string(_xLength) + "\n";
+	data += "y corner: " + std::to_string(_yLL) + "\n";
+	data += "y length: " + std::to_string(_yLength) + "\n";
+
+	
+	return data;
+}
+

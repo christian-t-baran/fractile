@@ -115,7 +115,7 @@ LinearField* LinearFieldBuilder(int x, int y) {
 }
 
 // Builds a RadialField object
-RadialField* RadialFieldBuilder(int diameter) {
+RadialField* RadialFieldBuilder(int x, int y) {
 	std::string colourStr1;
 	std::string colourStr2;
 	std::string colourPulse;
@@ -174,16 +174,16 @@ RadialField* RadialFieldBuilder(int diameter) {
 	RadialField* field;
 
 	if (fieldType == 1) {
-		field = new RadialField(colours, diameter / 2, bias);
+		field = new RadialField(colours, x, y, bias);
 	}
 	else if (fieldType == 2) {
-		field = new RadialSquareField(colours, diameter / 2, bias);
+		field = new RadialSquareField(colours, x, y, bias);
 	}
 	else if (fieldType == 3) {
-		field = new RadialXField(colours, diameter / 2, bias);
+		field = new RadialXField(colours, x, y, bias);
 	}
 	else if (fieldType == 4) {
-		field = new RadialDiamondField(colours, diameter / 2, bias);
+		field = new RadialDiamondField(colours, x, y, bias);
 	}
 
 	// set up effect
@@ -216,7 +216,7 @@ ColourField* fieldFactory(int x, int y) {
 	std::cin >> option;
 
 	if (option == 1) {
-		field = RadialFieldBuilder(x);
+		field = RadialFieldBuilder(x, y);
 	}
 	else if (option == 2) {
 		field = LinearFieldBuilder(x, y);

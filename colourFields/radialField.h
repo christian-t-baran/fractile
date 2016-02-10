@@ -13,7 +13,7 @@ class RadialField :
 
 public:
 	RadialField(); // TO DO - fix this ugly hack
-	RadialField(std::vector<Colour>, int, double);
+	RadialField(std::vector<Colour>, int, int, double);
 	~RadialField();
 
 	void reinitialize() override;
@@ -31,6 +31,7 @@ protected:
 	std::vector<Colour> _curColours;
 
 	int _radius;
+	double _yScale;
 
 private:
 	Colour stepEffect(Colour, Colour);

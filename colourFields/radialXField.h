@@ -14,8 +14,8 @@ class RadialXField :
 	public RadialField {
 
 public:
-	RadialXField(std::vector<Colour> colours, int radius, double bias) :
-		RadialField(colours, radius, bias) {};
+	RadialXField(std::vector<Colour> colours, int x, int y, double bias) :
+		RadialField(colours, x, y, bias) {};
 	~RadialXField();
 
 	Colour getColourAt(int, int);

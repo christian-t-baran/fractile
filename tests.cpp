@@ -27,6 +27,20 @@ void squareTiling() {
 	}
 }
 
+void triangleTiling() {
+	int option;
+
+	std::cout << "1 for basic triangle tiling, 2 for recursive triangle tiling: " << std::endl;
+	std::cin >> option;
+
+	if (option == 1) {
+		basicTriangleTiling();
+	}
+	else if (option == 2) {
+		recursiveTriangleTiling();
+	}
+}
+
 void tiling() {
 	int option;
 
@@ -34,10 +48,10 @@ void tiling() {
 	std::cin >> option;
 
 	if ( option == 1) {
-		squareTilingTest();
+		squareTiling();
 	}
 	else if (option == 2) {
-		triangleTilingTest();
+		triangleTiling();
 	}
 }
 
@@ -62,10 +76,11 @@ void colourTests() {
 	std::cin.get();
 }
 
-int main() {
+// argv[0] -> path to ImageMagick
+int main(int argc, char *argv[]){
 	int option;
 
-	Magick::InitializeMagick("C:\\ImageMagick");
+	Magick::InitializeMagick(argv[0]);
 
 
 	std::cout << "1 for tiling tests, 2 for field tests, 3 for colour conversion + colour tests: " << std::endl;

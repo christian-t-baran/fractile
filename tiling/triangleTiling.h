@@ -3,6 +3,7 @@
 
 #pragma once
 
-void triangleTilingTest();
+void basicTriangleTiling();
+void recursiveTriangleTiling();
 
 #endif

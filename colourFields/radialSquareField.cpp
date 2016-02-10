@@ -13,7 +13,7 @@ Colour RadialSquareField::getColourAt(int x, int y)
 {
 	// change (0, 0) coordinates to absolute distances from origin on Cartesian plane
 	int field_x = std::abs(x - _radius);
-	int field_y = std::abs(y - _radius);
+	int field_y = std::abs(std::round(y * _yScale) - _radius);
 
 	// calculate maximum distance
 	int max_distance = std::sqrt((_radius * _radius) + (_radius * _radius));

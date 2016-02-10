@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include <list>
 #include <Magick++.h>
 #include <utility>
@@ -13,7 +14,7 @@ Triangle::Triangle(int aX, int aY, int bX, int bY, int cX, int cY) {
 	_aY = aY;
 	_bX = bX;
 	_bY = bY;
-	_cX = cY;
+	_cX = cX;
 	_cY = cY;
 }
 
@@ -34,7 +35,7 @@ double Triangle::getArea() {
 	double ac = segmentLength(_aX, _aY, _cX, _cY);
 	double bc = segmentLength(_bX, _bY, _cX, _cY);
 
-	double s = (ab + ac + bc) / 3.0;
+	double s = (ab + ac + bc) / 2.0;
 	
 	double area = std::sqrt(s * (s - ab) * (s - ac) * (s - bc) );
 
@@ -50,5 +51,26 @@ Magick::Drawable Triangle::getDrawable()
 	coords.push_back(Magick::Coordinate(_cX, _cY));
 
 	return Magick::DrawablePolygon(coords);
+}
+
+std::string Triangle::toString() {
+	std::string coords;
+	coords += "A: (" + std::to_string(_aX) + ", " + std::to_string(_aY) + ")\n";
+	coords += "B: (" + std::to_string(_bX) + ", " + std::to_string(_bY) + ")\n";
+	coords += "C: (" + std::to_string(_cX) + ", " + std::to_string(_cY) + ")\n";
+
+	return coords;
+}
+
+std::pair<int, int> Triangle::getA() {
+	return std::make_pair(_aX, _aY);
+}
+
+std::pair<int, int> Triangle::getB() {
+	return std::make_pair(_bX, _bY);
+}
+
+std::pair<int, int> Triangle::getC() {
+	return std::make_pair(_cX, _cY);
 }
 

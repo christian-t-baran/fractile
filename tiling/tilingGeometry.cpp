@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include <utility>
 
 #include "tilingGeometry.h"
@@ -45,7 +46,10 @@ double segmentLength(int aX, int aY, int bX, int bY)
 	else {
 		double lengthX = std::abs(aX - bX);
 		double lengthY = std::abs(aY - bY);
-		length = std::sqrt((lengthX * lengthX) + (lengthY + lengthY));
+		// std::cout << "Length of X coord " << lengthX << std::endl;
+		// std::cout << "Length of Y coord " << lengthY << std::endl;
+
+		length = std::sqrt((lengthX * lengthX) + (lengthY * lengthY));
 	}
 
 	return length;

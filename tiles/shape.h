@@ -14,5 +14,6 @@ public:
 	virtual std::pair<int, int> getCenterCoord() = 0;
 	virtual double getArea() = 0;
 	virtual Magick::Drawable getDrawable() = 0;
+	virtual std::string toString() = 0;
 };
 #endif

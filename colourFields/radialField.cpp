@@ -10,10 +10,11 @@ RadialField::RadialField() {
 
 }
 
-RadialField::RadialField(std::vector<Colour> colours, int radius, double bias) {
+RadialField::RadialField(std::vector<Colour> colours, int x, int y, double bias) {
 	_colours = colours;
 	_curColours = colours;
-	_radius = radius;
+	_radius = x / 2;
+	_yScale = (double) x / (double) y;
 	_bias = bias;
 }
 
@@ -86,7 +87,7 @@ Colour RadialField::getColourAt(int x, int y)
 {
 	// change (0, 0) coordinates to coordinates on the Cartesian plane
 	int field_x = x - _radius;
-	int field_y = y - _radius;
+	int field_y = std::abs(std::round(y * _yScale) - _radius);
 
 	// convert Cartesian coordinates to values on unit square
 	double unit_x = field_x / ((double)_radius);
