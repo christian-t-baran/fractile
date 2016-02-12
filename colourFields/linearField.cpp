@@ -26,26 +26,55 @@ void LinearField::reinitialize()
 }
 
 // Sets up a strobe effect
-void LinearField::setStrobe(int steps, double bias) {
+void LinearField::setStrobe(int steps, unsigned int depth, double bias, bool direction) {
+	// fix depth if out of range
+	if (depth > (_colours.size() - 1)) {
+		depth = _colours.size() - 1;
+	}
+
+	_effectDepth = depth;
+	
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
 	_effectBias = bias;
 	_effect = true;
+	_effectDir = direction;
 	_strobe = true;
+	_pulse = false;
+	_converge = false;
+	// _flow = false;
+}
+
+void LinearField::setFlow(int steps, double bias, bool direction) {
+	// add enough steps for full transition on each colour
+	_effectStepTotal = steps * _colours.size() + _colours.size();
+	_effectStepCur = 0;
+	_effectBias = bias;
+	_effect = true;
+	_effectDir = direction;
+	_flow = true;
+	_strobe = false;
 	_pulse = false;
 	_converge = false;
 }
 
 // Sets up a pulse effect
-void LinearField::setPulse(Colour pulse, int steps, double bias) {
+void LinearField::setPulse(Colour pulse, int steps, unsigned int depth, double bias, bool direction) {
+	// fix depth if out of range
+	if (depth > (_colours.size() - 1)) {
+		depth = _colours.size() - 1;
+	}
+
 	_effectStepTotal = steps * 2;
 	_effectStepCur = 0;
 	_effectBias = bias;
 	_pulseColour = pulse;
 	_effect = true;
+	_effectDir = direction;
 	_strobe = false;
 	_pulse = true;
 	_converge = false;
+	// _flow = false;
 }
 
 // Sets up a converge effect
@@ -57,24 +86,7 @@ void LinearField::setConverge(int steps, double bias) {
 	_strobe = false;
 	_pulse = false;
 	_converge = true;
-}
-
-// Steps effect forward
-void LinearField::stepForward() {
-	if (_effect && (!finishedEffect())) {
-		if (_strobe) {
-			_curColours[0] = stepEffect(_colours[0], _colours[1]);
-		}
-		else if (_pulse) {
-			_curColours[0] = stepEffect(_colours[0], _pulseColour);
-		}
-		else if (_converge) {
-			_curColours[0] = stepEffect(_colours[0], _colours[1]);
-			_curColours[1] = stepEffect(_colours[1], _colours[0]);
-		}
-	}
-
-	_effectStepCur++;
+	// _flow = false;
 }
 
 // Returns the Colour value at (x, y) pt in the field
@@ -93,94 +105,28 @@ Colour LinearField::getColourAt(int x, int y)
 	double b2 = second.getLAB_B();
 
 	// interpolate new LAB values
-	int max;
-	int step;
+	int maxDistance;
 	int distance;
 
-	if(_xAxis) {
-		max = _x / _copies;
-		step = _step % max;
-		distance = x  % max;
+	if(_direction) {
+		maxDistance = _x;
+		distance = x;
 	}
 	else {
-		max = _y / _copies;
-		step = _step % max;
-		distance = y % max;
+		maxDistance = _y / _copies;
+		distance = y;
 	}
 
-	double l = interpolateDistance(max, distance, step, l2, l1, _bias);
-	double a = interpolateDistance(max, distance, step, a2, a1, _bias);
-	double b = interpolateDistance(max, distance, step, b2, b1, _bias);
-
-	Colour newColour = Colour(l, a, b);
+	Colour newColour = mapDistanceToColourRange(maxDistance, distance, _step);
 
 	return newColour;
 }
 
-Colour LinearField::stepEffect(Colour c1, Colour c2) {
-	double l1 = c1.getLAB_L();
-	double l2 = c2.getLAB_L();
-	double a1 = c1.getLAB_A();
-	double a2 = c2.getLAB_A();
-	double b1 = c1.getLAB_B();
-	double b2 = c2.getLAB_B();
-
-	Colour newCol;
-
-	if (_effectStepCur == _effectStepTotal) {
-		newCol = _colours[0];
+void LinearField::changeDirection(){
+	if (_direction) {
+		_direction = false;
 	}
 	else {
-		double l;
-		double a;
-		double b;
-		int length;
-
-		if (_xAxis) {
-			length = _x;
-		}
-		else {
-			length = _y;
-		}
-
-
-		// if even and at halfway point
-		if ((_effectStepTotal % 2) == 0 && (_effectStepCur == (_effectStepTotal / 2))) {
-			l = l2;
-			a = a2;
-			b = b2;
-		}
-		// past halfway travel towards origin
-		else if (_effectStepCur > (_effectStepTotal / 2)) {
-			int transitionSteps = _effectStepTotal / 2;
-			int effectiveStep = _effectStepCur - transitionSteps;
-			double adjustedBias = 1 - _effectBias;
-
-			// interpolate b/w pulse & origin
-			l = interpolateStep(length, effectiveStep, transitionSteps, l1, l2, adjustedBias);
-			a = interpolateStep(length, effectiveStep, transitionSteps, a1, a2, adjustedBias);
-			b = interpolateStep(length, effectiveStep, transitionSteps, b1, b2, adjustedBias);
-		}
-		// before halfway travel towards 2nd
-		else {
-			int transitionSteps = _effectStepTotal / 2;
-
-			// interpolate b/w origin & pulse
-			l = interpolateStep(length, _effectStepCur, transitionSteps, l2, l1, _effectBias);
-			a = interpolateStep(length, _effectStepCur, transitionSteps, a2, a1, _effectBias);
-			b = interpolateStep(length, _effectStepCur, transitionSteps, b2, b1, _effectBias);
-		}
-		newCol = Colour(l, a, b);
-	}
-
-	return newCol;
-}
-
-void LinearField::changeAxis(){
-	if (_xAxis) {
-		_xAxis = false;
-	}
-	else {
-		_xAxis = true;
+		_direction = true;
 	}
 }

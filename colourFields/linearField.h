@@ -10,24 +10,19 @@ public:
 	~LinearField();
 
 	void reinitialize() override;
-	void changeAxis();
+	void changeDirection();
 
-	void setStrobe(int, double) override;
-	void setPulse(Colour, int, double) override;
+	void setStrobe(int, unsigned int, double, bool) override;
+	void setFlow(int, double, bool) override;
+	void setPulse(Colour, int, unsigned int, double, bool) override;
 	void setConverge(int, double) override;
-	void stepForward() override;
 
 	Colour getColourAt(int, int) override;
 
 protected:
-	std::vector<Colour> _colours;
-	std::vector<Colour> _curColours;
 	int _x;
 	int _y;
 
-	bool _xAxis = true;
-
-private:
-	Colour stepEffect(Colour, Colour);
+	bool _direction = true; // true X, false Y
 };
 

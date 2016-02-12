@@ -20,8 +20,9 @@ public:
 	virtual void setCopies(int);
 	virtual Colour getColourAt(int, int);
 
-	virtual void setPulse(Colour, int, double);
-	virtual void setStrobe(int, double);
+	virtual void setPulse(Colour, int, unsigned int, double, bool);
+	virtual void setStrobe(int, unsigned int, double, bool);
+	virtual void setFlow(int, double, bool);
 	virtual void setConverge(int, double);
 
 	virtual void stepForward();
@@ -40,13 +41,30 @@ protected:
 	int _copies = 1;
 	bool _effect = false;
 
+	bool _effectDir = true;  // true for inside, false for outside
+	int _effectDepth = 1;
+
 	Colour _pulseColour;
 	bool _pulse = false;
 	bool _strobe = false;
 	bool _converge = false;
+	bool _flow = false;
+
 	int _effectStepTotal = 1;
 	int _effectStepCur = 0;
 	double _effectBias = 0.5;
+
+	Colour mapDistanceToColourRange(int, int, int);
+
+	void stepStrobePulse();
+	void stepConverge();
+	void stepFlow();
+
+
+	Colour stepEffect(Colour, Colour);
 };
+
+int stepsBetween(int, int);
+std::pair<int, int> neighbours(int, int, int);
 
 #endif

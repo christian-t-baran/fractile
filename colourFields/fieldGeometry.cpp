@@ -1,52 +1,120 @@
 #include <iostream>
 
+#include "../colours/colour.h"
 #include "fieldGeometry.h"
 
-// maps an unbiased distance on the circle to a point between p2 and p1
-double interpolateDistanceNoBias(int radius, int distance, int stepSize, double p2, double p1) {
-	// calculate biased halfway pt and number of steps
-	int numSteps = radius / stepSize;
-
-	// calculate differences and biased halfway point
-	double dif = p2 - p1;
-
-	double circleSlope;
-	double labSlope;
-	int curStep;
-
-	circleSlope = radius / (double)numSteps;
-	labSlope = dif / (double)numSteps;
-	curStep = distance / circleSlope;
-
-	double p = p1 + (labSlope * curStep);
-
-	return p;
+// converts radian value to integer degree
+int degToRad(double a) {
+	return std::floor(a * (180 / PI));
 }
 
-// maps a biased distance on the circle to a point between between p2 and p1
-double interpolateDistance(int radius, int distance, int stepSize, double p2, double p1, double bias) {
+
+// returns angle of an x, y point on the Cartesian plane around the x axis in radians
+int getAngle(int x, int y) {
+	double angle;
+	
+	// origin
+	if ( (x == 0) && (y == 0) ) {
+		angle = 0;
+	}	
+	// quadrant 1
+	else if ((x >= 0) && (y >= 0)) {
+		// if on x-axis
+		if (y == 0) {
+			angle = 0;
+		}
+		// if on y-axis
+		else if (x == 0) {
+			angle = PI / 2.0;
+		}
+		else {
+			angle = std::atan(y / (double) x);
+		}
+	}
+	// quadrant 2
+	else if ((x <= 0) && (y >= 0) ){
+		// if on x-axis
+		if (y == 0) {
+			angle = PI;
+		}
+		// if on y-axis
+		else if (x == 0) {
+			angle = PI / 2.0;
+		}
+		else {
+			// adjust x
+			x = std::abs(x);
+
+			// flip x & y to get angle from positive y axis 
+			angle = (PI / 2.0) + std::atan(x / (double) y);
+		}
+	}
+	// quadrant 3
+	else if ((x <= 0) && (y <= 0)) {
+		// if on x-axis
+		if (y == 0) {
+			angle = PI;
+		}
+		// if on y-axis
+		else if (x == 0) {
+			angle = (3 * PI) / 2;
+		}
+		else {
+			// adjust x and y
+			x = std::abs(x);
+			y = std::abs(y);
+
+			// since values adjusted, treat as reflection about both axes
+			angle = PI + std::atan(y / (double) x);
+		}
+	}
+	// quadrant 4
+	else{
+		// if on x-axis
+		if (y == 0) {
+			angle = 2 * PI;
+		}
+		// if on y-axis
+		else if (x == 0) {
+			angle = (3 * PI) / 2;
+		}
+		else {
+			// adjust y
+			y = std::abs(y);
+
+			// flip x & y to get angle from positive y axis 
+			angle = ( (3 * PI) / 2.0 ) + std::atan(x / (double) y);
+		}
+	}
+
+	return degToRad(angle);
+}
+
+/*
+// maps a biased distance on a scale of 0 -> maxDistance to a point between between p2 and p1
+double interpolateDistance(int maxDistance, int distance, int stepSize, double p2, double p1, double bias) {
 	// calculate biased halfway pt and number of steps
-	int halfwayRad = radius * bias;
-	int numSteps = radius / stepSize;
+	int halfwayOriginal = maxDistance * bias;
+	int numSteps = maxDistance / stepSize;
 
 	// calculate differences and biased halfway point
 	double dif = p2 - p1;
 	double halfwayDif = dif / 2.0;
 
-	double circleSlope;
+	double originalSlope;
 	double labSlope;
 	int curStep;
 
 	// calculate step distance and corresponding step
-	if (distance > halfwayRad) {
-		circleSlope = (radius - halfwayRad) / (numSteps / 2.0);
+	if (distance > halfwayOriginal) {
+		originalSlope = (maxDistance - halfwayOriginal) / (numSteps / 2.0);
 		labSlope = (dif - halfwayDif) / (numSteps / 2.0);
-		curStep = (distance - halfwayRad) / circleSlope;
+		curStep = (distance - halfwayOriginal) / originalSlope;
 	}
 	else {
-		circleSlope = halfwayRad / (numSteps / 2.0);
+		originalSlope = halfwayOriginal / (numSteps / 2.0);
 		labSlope = (halfwayDif) / (numSteps / 2.0);
-		curStep = distance / circleSlope;
+		curStep = distance / originalSlope;
 	}
 
 	double p;
@@ -58,7 +126,7 @@ double interpolateDistance(int radius, int distance, int stepSize, double p2, do
 	else if (bias == 1) {
 		p = p2;
 	}
-	else if (distance > halfwayRad ) {
+	else if (distance > halfwayOriginal ) {
 		p = p1 + halfwayDif + (labSlope * curStep);
 	}
 	else {
@@ -67,11 +135,41 @@ double interpolateDistance(int radius, int distance, int stepSize, double p2, do
 
 	return p;
 }
+*/
 
-// maps a biased distance on the circle to a point between between p2 and p1
-double interpolateStep(int radius, int step, int numSteps, double p2, double p1, double bias) {
-	int halfwayRad = radius * bias;
+// returns corresponding step based on distance
+int correspondingStep(int maxDistance, int distance, int stepSize, double bias) {
+	// calculate biased halfway pt and number of steps
+	int halfwayOriginal = maxDistance * bias;
+	int numSteps = maxDistance / stepSize;
 
+	double slope;
+	int curStep;
+
+	// calculate step distance and corresponding step
+	if (distance > halfwayOriginal) {
+		slope = (maxDistance - halfwayOriginal) / (numSteps / 2.0);
+		curStep = (distance - halfwayOriginal) / slope;
+		curStep += (numSteps / 2);
+
+		// Add remainder of odd division onto second half
+		if ((numSteps % 2) != 0) {
+			curStep += 1;
+		}
+
+	}
+	else {
+		slope = halfwayOriginal / (numSteps / 2.0);
+		curStep = distance / slope;
+	}
+
+
+
+	return curStep;
+}
+
+// maps a biased step to a point between between p2 and p1
+double interpolateStep(int step, int numSteps, double p2, double p1, double bias) {
 	double dif = p2 - p1;
 	double halfwayDif = dif * bias;
 
@@ -98,4 +196,34 @@ double interpolateStep(int radius, int step, int numSteps, double p2, double p1,
 	return p;
 }
 
+// Interpolates colour between two different ones
+// if apply bias is true, then bias is applied
+Colour interpolateColour(Colour c1, Colour c2, int curStep, int stepsBetween, double bias, bool applyBias) {
+	// get LAB values
+	double l1 = c1.getLAB_L();
+	double l2 = c2.getLAB_L();
+	double a1 = c1.getLAB_A();
+	double a2 = c2.getLAB_A();
+	double b1 = c1.getLAB_B();
+	double b2 = c2.getLAB_B();
 
+	// interpolate new LAB values
+	Colour newColour;
+	
+	if (applyBias) {
+		double l = interpolateStep(curStep, stepsBetween, l2, l1, bias);
+		double a = interpolateStep(curStep, stepsBetween, a2, a1, bias);
+		double b = interpolateStep(curStep, stepsBetween, b2, b1, bias);
+		newColour = Colour(l, a, b);
+	}
+	else {
+		double l = interpolateStep(curStep, stepsBetween, l2, l1, 0.5);
+		double a = interpolateStep(curStep, stepsBetween, a2, a1, 0.5);
+		double b = interpolateStep(curStep, stepsBetween, b2, b1, 0.5);
+
+		newColour = Colour(l, a, b);
+	}
+
+	return newColour;
+
+}

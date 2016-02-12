@@ -18,23 +18,16 @@ public:
 
 	void reinitialize() override;
 
-	void setStrobe(int, double) override;
-	void setPulse(Colour, int, double) override;
+	void setStrobe(int, unsigned int, double, bool) override;
+	void setFlow(int, double, bool) override;
+	void setPulse(Colour, int, unsigned int, double, bool) override;
 	void setConverge(int, double) override;
-
-	void stepForward() override;
 
 	Colour getColourAt(int, int) override;
 
 protected:
-	std::vector<Colour> _colours;
-	std::vector<Colour> _curColours;
-
 	int _radius;
 	double _yScale;
-
-private:
-	Colour stepEffect(Colour, Colour);
 };
 
 #endif
