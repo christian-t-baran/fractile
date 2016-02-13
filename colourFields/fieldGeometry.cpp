@@ -184,10 +184,15 @@ double interpolateStep(int step, int numSteps, double p2, double p1, double bias
 
 	// calculates slope by step
 	if (step > (numSteps / 2) ) {
-		stepDistance = (dif - halfwayDif) / (numSteps / 2);
+		if ((numSteps % 2) != 0) {
+			stepDistance = (dif - halfwayDif) / ((numSteps / 2.0) + 1);
+		}
+		else {
+			stepDistance = (dif - halfwayDif) / (numSteps / 2.0);
+		}
 	}
 	else {
-		stepDistance = halfwayDif / (numSteps / 2);
+		stepDistance = halfwayDif / (numSteps / 2.0);
 	}
 
 	double p;

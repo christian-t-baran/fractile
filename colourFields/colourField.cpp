@@ -324,7 +324,9 @@ Colour ColourField::mapDistanceToColourRange(int max, int distance, int step)
 	std::pair<int, int> indices = neighbours(curStep, max / step, _colours.size());
 
 	// steps between each colour
-	int colStepTotal = stepsBetween(max / step, _colours.size());
+	std::pair<int, int> totalAndRemainder = stepsBetween(max / step, _colours.size());
+
+	int colStepTotal = totalAndRemainder.first;
 
 	int colStepCur;
 	if (curStep == 0) {
@@ -336,7 +338,8 @@ Colour ColourField::mapDistanceToColourRange(int max, int distance, int step)
 
 	// if at the end add on the remainder
 	if (indices.first == (_colours.size() - 2)) {
-		colStepCur += max % colStepTotal;
+		colStepCur += totalAndRemainder.second;
+		colStepTotal += totalAndRemainder.second;
 	}
 
 	bool applyBias = false;
@@ -404,14 +407,14 @@ Colour ColourField::stepEffect(Colour c1, Colour c2) {
 	return newCol;
 }
 
-// returns steps between elements
-int stepsBetween(int totalSteps, int numElements) {
-	return totalSteps / (numElements - 1);
+// returns steps between elements, and remainder
+std::pair<int, int> stepsBetween(int totalSteps, int numElements) {
+	return std::make_pair(totalSteps / (numElements - 1), totalSteps % (numElements - 1));
 }
 
 // returns adjacent elements (corresponding to current step)
 std::pair<int, int> neighbours(int curStep, int totalSteps, int numElements) {
-	int interval = stepsBetween(totalSteps, numElements);
+	int interval = stepsBetween(totalSteps, numElements).first;
 
 	int first = curStep / interval;
 	

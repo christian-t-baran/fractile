@@ -64,7 +64,7 @@ protected:
 	Colour stepEffect(Colour, Colour);
 };
 
-int stepsBetween(int, int);
+std::pair<int, int> stepsBetween(int, int);
 std::pair<int, int> neighbours(int, int, int);
 
 #endif
