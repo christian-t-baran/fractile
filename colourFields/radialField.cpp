@@ -84,14 +84,14 @@ void RadialField::setPulse(Colour pulse, int steps, unsigned int depth, double b
 
 // Sets up a converge effect
 void RadialField::setConverge(int steps, double bias){
-	_effectStepTotal = steps * 2;
+	_effectStepTotal = (steps * (_colours.size() - 1) * 2) + ((_colours.size() - 1) * 2);
 	_effectStepCur = 0;
 	_effectBias = bias;
 	_effect = true;
 	_strobe = false;
 	_pulse = false;
 	_converge = true;
-	// _flow = false;
+	_flow = false;
 }
 
 // Returns the Colour value at (x, y) pt in the field

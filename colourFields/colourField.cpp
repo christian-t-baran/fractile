@@ -64,16 +64,15 @@ void ColourField::stepForward() {
 			stepFlow();
 		}
 		else if (_converge) {
+			stepConverge();
+			/*
 			_curColours[0] = stepEffect(_colours[0], _colours[1]);
 			_curColours[1] = stepEffect(_colours[1], _colours[0]);
+			*/
 		}
 	}
 
 	_effectStepCur++;
-}
-
-void ColourField::stepConverge() {
-	
 }
 
 // steps strobe or pulse effect forward
@@ -155,6 +154,97 @@ void ColourField::stepStrobePulse() {
 			}
 		}
 	}
+
+}
+
+// steps converge forwrad
+void ColourField::stepConverge() {
+	// account for extra added steps
+	int transitionSteps = (_effectStepTotal / ((_colours.size() - 1) * 2)) - 1;
+
+	int curStep = _effectStepCur % (transitionSteps + 1);
+
+	// whether past halfway
+	bool halfway = _effectStepCur >= ( _effectStepTotal / 2 );
+
+	bool odd = (_colours.size() % 2) != 0;
+
+	int left = 1;
+	int right = _colours.size() - 2;
+
+	int offset = _effectStepCur / (transitionSteps + 1);
+	if (halfway) {
+		offset -= _colours.size() - 1;
+	}
+
+	std::cout << "Current effect step: " << _effectStepCur << std::endl;
+	std::cout << "transition steps: " << transitionSteps << std::endl;
+	std::cout << "current step in transition: " << curStep << std::endl;
+
+	left += offset;
+	right -= offset;
+
+	// travel through middle changing colours
+	if (left == right) {
+		_effectStepCur += transitionSteps;
+	}
+	else if (!halfway) {
+		Colour cStart = _colours[0];
+		Colour cLeft = _colours[left];
+
+		Colour cEnd = _colours[_colours.size() - 1];
+		Colour cRight = _colours[right];
+
+		if (left < right) {
+			_curColours[left] = interpolateColour(cLeft, cStart, curStep, transitionSteps, 0.5, true);
+			_curColours[right] = interpolateColour(cRight, cEnd, curStep, transitionSteps, 0.5, true);
+		}
+		else {
+			int beforeLeft = left - 1;
+			int beforeRight = right + 1;
+
+			_curColours[left] = interpolateColour(cEnd, cStart, curStep, transitionSteps, 0.5, true);
+			_curColours[right] = interpolateColour(cStart, cEnd, curStep, transitionSteps, 0.5, true);
+
+			if ((beforeLeft > beforeRight) && (beforeLeft != beforeRight) && (beforeLeft != 0) && (beforeRight != _colours.size())) {
+				Colour cBeforeRight = _colours[beforeRight];
+				Colour cBeforeLeft = _colours[beforeLeft];
+
+				_curColours[beforeRight] = interpolateColour(cEnd, cBeforeLeft, curStep, transitionSteps, 0.5, true);
+				_curColours[beforeLeft] = interpolateColour(cStart, cBeforeRight, curStep, transitionSteps, 0.5, true);
+			}
+
+		}
+	}
+	else {
+		Colour cStart = _colours[_colours.size() - 1];
+		Colour cLeft = _colours[left];
+
+		Colour cEnd = _colours[0];
+		Colour cRight = _colours[right];
+
+		if (left < right) {
+			_curColours[left] = interpolateColour(cRight, cStart, curStep, transitionSteps, 0.5, true);
+			_curColours[right] = interpolateColour(cLeft, cEnd, curStep, transitionSteps, 0.5, true);
+		}
+		else {
+			int beforeLeft = left - 1;
+			int beforeRight = right + 1;
+
+			_curColours[left] = interpolateColour(cEnd, cStart, curStep, transitionSteps, 0.5, true);
+			_curColours[right] = interpolateColour(cStart, cEnd, curStep, transitionSteps, 0.5, true);
+
+			if ((beforeLeft > beforeRight) && (beforeLeft != beforeRight) && (beforeLeft != 0) && (beforeRight != _colours.size())) {
+				Colour cBeforeRight = _colours[beforeRight];
+				Colour cBeforeLeft = _colours[beforeLeft];
+
+				_curColours[beforeRight] = interpolateColour(cEnd, cBeforeRight, curStep, transitionSteps, 0.5, true);
+				_curColours[beforeLeft] = interpolateColour(cStart, cBeforeLeft, curStep, transitionSteps, 0.5, true);
+			}
+
+		}
+	}
+	
 
 }
 

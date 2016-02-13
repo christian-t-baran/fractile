@@ -147,7 +147,14 @@ int correspondingStep(int maxDistance, int distance, int stepSize, double bias) 
 	int curStep;
 
 	// calculate step distance and corresponding step
-	if (distance > halfwayOriginal) {
+	if (bias == 0) {
+		curStep = 0;
+
+	}
+	else if (bias == 1) {
+		curStep = 1;
+	}
+	else if (distance > halfwayOriginal) {
 		slope = (maxDistance - halfwayOriginal) / (numSteps / 2.0);
 		curStep = (distance - halfwayOriginal) / slope;
 		curStep += (numSteps / 2);

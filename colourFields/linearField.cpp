@@ -42,7 +42,7 @@ void LinearField::setStrobe(int steps, unsigned int depth, double bias, bool dir
 	_strobe = true;
 	_pulse = false;
 	_converge = false;
-	// _flow = false;
+	_flow = false;
 }
 
 void LinearField::setFlow(int steps, double bias, bool direction) {
@@ -74,36 +74,24 @@ void LinearField::setPulse(Colour pulse, int steps, unsigned int depth, double b
 	_strobe = false;
 	_pulse = true;
 	_converge = false;
-	// _flow = false;
+	_flow = false;
 }
 
 // Sets up a converge effect
 void LinearField::setConverge(int steps, double bias) {
-	_effectStepTotal = steps * 2;
+	_effectStepTotal = (steps * (_colours.size() - 1) * 2) + ((_colours.size() - 1) * 2);
 	_effectStepCur = 0;
 	_effectBias = bias;
 	_effect = true;
 	_strobe = false;
 	_pulse = false;
 	_converge = true;
-	// _flow = false;
+	_flow = false;
 }
 
 // Returns the Colour value at (x, y) pt in the field
 Colour LinearField::getColourAt(int x, int y)
 {
-	// get Colours from vector
-	Colour first = _curColours[0];
-	Colour second = _curColours[1];
-
-	// get LAB values
-	double l1 = first.getLAB_L();
-	double l2 = second.getLAB_L();
-	double a1 = first.getLAB_A();
-	double a2 = second.getLAB_A();
-	double b1 = first.getLAB_B();
-	double b2 = second.getLAB_B();
-
 	// interpolate new LAB values
 	int maxDistance;
 	int distance;
@@ -113,7 +101,7 @@ Colour LinearField::getColourAt(int x, int y)
 		distance = x;
 	}
 	else {
-		maxDistance = _y / _copies;
+		maxDistance = _y;
 		distance = y;
 	}
 
