@@ -1,3 +1,4 @@
+#include <Magick++.h>
 #include <string>
 
 #ifndef COLOUR_H
@@ -22,6 +23,8 @@ public:
 	std::string RGB();
 	std::string LAB();
 	std::string hex();
+
+	Magick::ColorRGB toMagick();
 
 protected:
 	double _lab_l;

@@ -65,10 +65,6 @@ void ColourField::stepForward() {
 		}
 		else if (_converge) {
 			stepConverge();
-			/*
-			_curColours[0] = stepEffect(_colours[0], _colours[1]);
-			_curColours[1] = stepEffect(_colours[1], _colours[0]);
-			*/
 		}
 	}
 
@@ -176,10 +172,6 @@ void ColourField::stepConverge() {
 	if (halfway) {
 		offset -= _colours.size() - 1;
 	}
-
-	std::cout << "Current effect step: " << _effectStepCur << std::endl;
-	std::cout << "transition steps: " << transitionSteps << std::endl;
-	std::cout << "current step in transition: " << curStep << std::endl;
 
 	left += offset;
 	right -= offset;
@@ -302,7 +294,15 @@ int ColourField::effectStepCurrent() {
 }
 
 int ColourField::effectStepTotal() {
-	return _effectStepTotal;
+	int effectSteps = _effectStepTotal;
+
+	// adjust for skipped steps in converge algorithm
+	// if odd number of colours
+	if (_converge && ((_colours.size() % 2) != 0) ){
+		int transitionSteps = (_effectStepTotal / ((_colours.size() - 1) * 2)) - 1;
+	}
+
+	return effectSteps;
 }
 
 

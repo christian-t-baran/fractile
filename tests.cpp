@@ -6,6 +6,7 @@
 #include "colourFields/fieldTest.h"
 #include "tiling/squareTiling.h"
 #include "tiling/triangleTiling.h"
+#include "tiling/curveTiling.h"
 
 // handles linear field tests
 
@@ -44,7 +45,7 @@ void triangleTiling() {
 void tiling() {
 	int option;
 
-	std::cout << "1 for square tiling, 2 for triangle tiling: " << std::endl;
+	std::cout << "1 for square tiling, 2 for triangle tiling, 3 for curves: " << std::endl;
 	std::cin >> option;
 
 	if ( option == 1) {
@@ -52,6 +53,9 @@ void tiling() {
 	}
 	else if (option == 2) {
 		triangleTiling();
+	}
+	else if (option == 3) {
+		curveTiling();
 	}
 }
 

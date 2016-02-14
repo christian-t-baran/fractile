@@ -46,12 +46,14 @@ Colour::Colour(std::string colour) {
 
 // Constructs a colour from a set of RGB values
 Colour::Colour(int r, int g, int b) {
+	// check & clamp RGB values
 	_rgb_r = r;
 	_rgb_g = g;
 	_rgb_b = b;
 
 	std::vector<double> LAB = RGBtoLAB(r, g, b);
 
+	// check & clamp LAB values
 	_lab_l = LAB[0];
 	_lab_a = LAB[1];
 	_lab_b = LAB[2];
@@ -59,9 +61,36 @@ Colour::Colour(int r, int g, int b) {
 
 // Constructs a colour from a set of LAB values
 Colour::Colour(double l, double a, double b) {
+	// check & clamp LAB values
 	_lab_l = l;
 	_lab_a = a;
 	_lab_b = b;
+	if (_lab_l < VALID_LAB_L_LOWER) {
+		std::cout << "LAB L: " << _lab_l << " out of range, clamping to lower" << std::endl;
+		_lab_l = VALID_LAB_L_LOWER;
+	}
+	else if (_lab_l > VALID_LAB_L_UPPER) {
+		std::cout << "LAB L: " << _lab_l << " out of range, clamping to upper" << std::endl;
+		_lab_l = VALID_LAB_L_UPPER;
+	}
+	if (_lab_a < VALID_LAB_A_LOWER) {
+		std::cout << "LAB A: " << _lab_a << " out of range, clamping to lower" << std::endl;
+		_lab_a = VALID_LAB_A_LOWER;
+	}
+	else if (_lab_a > VALID_LAB_A_UPPER) {
+		std::cout << "LAB A: " << _lab_a << " out of range, clamping to upper" << std::endl;
+		_lab_a = VALID_LAB_A_UPPER;
+	}
+	if (_lab_b < VALID_LAB_B_LOWER) {
+		std::cout << "LAB B: " << _lab_b << " out of range, clamping to lower" << std::endl;
+		_lab_b = VALID_LAB_B_LOWER;
+	}
+	else if (_lab_b > VALID_LAB_B_UPPER) {
+		std::cout << "LAB B: " << _lab_b << " out of range, clamping to upper" << std::endl;
+		_lab_b = VALID_LAB_B_UPPER;
+	}
+
+
 
 	std::vector<int> RGB = LABtoRGB(l, a, b);
 
@@ -76,7 +105,6 @@ void Colour::changeLAB(double l, double a, double b)
 	_lab_l = l;
 	_lab_a = a;
 	_lab_b = b;
-
 	std::vector<int> RGB = LABtoRGB(l, a, b);
 
 	_rgb_r = RGB[0];
@@ -158,6 +186,17 @@ std:: string Colour::hex() {
 
 	return hex.str();
 }
+
+Magick::ColorRGB Colour::toMagick() {
+	double r = convertRGBtoDec(_rgb_r);
+	double g = convertRGBtoDec(_rgb_g);
+	double b = convertRGBtoDec(_rgb_b);
+
+	Magick::ColorRGB tempCol(r, g, b);
+
+	return tempCol;
+}
+
 
 // Tests for Colour class
 void colourTestsHex() {

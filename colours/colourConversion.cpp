@@ -18,6 +18,18 @@ double convertRGBtoDec(int c) {
 	return c / 255.0;
 }
 
+// clamps a vector of RGB values
+void clampRGB(std::vector<int>& RGB) {
+	for (int i = 0; i < RGB.size(); i++) {
+		if (RGB[i] < VALID_RGB_LOWER) {
+			RGB[i] = VALID_RGB_LOWER;
+		}
+		else if (RGB[i] > VALID_RGB_UPPER) {
+			RGB[i] = VALID_RGB_UPPER;
+		}
+	}
+}
+
 // Converts RGB to double array of XYZ
 std::vector<double> RGBtoXYZ (int r, int g, int b) {
 	double R = r / 255.0;
@@ -56,21 +68,14 @@ double RGBtoXYZcompander(double i) {
 
 // Converts LAB values to array of XYZ values
 std::vector<double> LABtoXYZ(double l, double a, double b) {
-	double Y;
-
-	// handle case where it chokes on 0
-	if (l == 0) {
-		Y = 0;
-	}
-	else {
-		Y = (l + 16) / 116;
-	}
-	double X = (a / 500) + Y;
-	double Z = Y - (b / 200);
+	double Y = (l + 16) / 116.0;
+	double X = (a / 500.0) + Y;
+	double Z = Y - (b / 200.0);
 	
-	X = LABtoXYZhelper(X);
-	Y = LABtoXYZhelper(Y);
-	Z = LABtoXYZhelper(Z);
+	// as per the eqn's on Bruce Lindbloom's site
+	X = LABtoXYZhelperXZ(X);
+	Y = LABtoXYZhelperY(l);
+	Z = LABtoXYZhelperXZ(Z);
 
 	std::vector<double> XYZ(3);
 	XYZ[0] = X * REF_X;
@@ -81,16 +86,27 @@ std::vector<double> LABtoXYZ(double l, double a, double b) {
 };
 
 // Helper for converting LABtoXYZ
-double LABtoXYZhelper(double i) {
-
-	if (std::pow(i, 3) > 0.008856) {
+double LABtoXYZhelperXZ(double i) {
+	if (std::pow(i, 3) > EPSILON) {
 		i = std::pow(i, 3);
 	}
 	else {
-		i = (i - 16 / 116) / 7.787;
+		i = ((116 * i) - 16) / KAPPA;
+	}
+	
+	return i;
+}
+
+double LABtoXYZhelperY(double l) {
+	if (l > (EPSILON * KAPPA)) {
+		double temp = ((l + 16) / (double) 116);
+		l = std::pow(temp, 3);
+	}
+	else {
+		l = (l / KAPPA);
 	}
 
-	return i;
+	return l;
 }
 
 // Converts array of XYZ values to array of RGB values
@@ -134,7 +150,6 @@ std::vector<double> XYZtoLAB(std::vector<double> XYZ) {
 	double Y = XYZ[1] / REF_Y;	// Observer= 2°, Illuminant= D65
 	double Z = XYZ[2] / REF_Z;
 	
-
 	X = XYZtoLABhelper(X);
 	Y = XYZtoLABhelper(Y);
 	Z = XYZtoLABhelper(Z);
@@ -150,9 +165,8 @@ std::vector<double> XYZtoLAB(std::vector<double> XYZ) {
 
 // Helper for converting XYZ to LAB
 double XYZtoLABhelper(double i) {
-	if (i > 0.008856) {
+	if (i > EPSILON) {
 		i = std::pow(i, 1 / 3.0);
-
 	}
 	else {
 		i = ((903.3 * i) + 16) / 116;
@@ -174,10 +188,16 @@ std::vector<double> RGBtoLAB(int r, int g, int b) {
 std::vector<int> LABtoRGB(double l, double a, double b) {
 	std::vector<double> XYZ = LABtoXYZ(l, a, b);
 
-	std::vector<int> LAB = XYZtoRGB(XYZ);
+	std::vector<int> RGB = XYZtoRGB(XYZ);
 
-	return LAB;
+	// clamp RGB values
+	clampRGB(RGB);
+
+	return RGB;
 }
+
+
+
 
 // Tests for colourConversion.cpp
 void colourConversionTests() {
