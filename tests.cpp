@@ -7,9 +7,9 @@
 #include "tiling/squareTiling.h"
 #include "tiling/triangleTiling.h"
 #include "tiling/curveTiling.h"
+#include "tiling/drawing.h"
 
 // handles linear field tests
-
 void colourFields() {
 	fieldTest();
 }
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]){
 	Magick::InitializeMagick(argv[0]);
 
 
-	std::cout << "1 for tiling tests, 2 for field tests, 3 for colour conversion + colour tests: " << std::endl;
+	std::cout << "1 for tiling tests, 2 for field tests, 3 for colour conversion + colour tests, 4 for image reading tests: " << std::endl;
 	std::cin >> option;
 
 	if (option == 1) {
@@ -98,6 +98,9 @@ int main(int argc, char *argv[]){
 	}
 	else if (option == 3) {
 		colourTests();
+	}
+	else if (option == 4) {
+		readImage();
 	}
 
 	std::cin.get();
